@@ -129,8 +129,26 @@ function Header({ cartCount, onCartOpen }) {
 function Hero({ autoplay = true, viewMode = "desktop" }) {
   const [idx, setIdx] = useState(0);
   const slides = [
-    { kind: "photo", img: viewMode === "mobile" ? "assets/hero-mobile.png" : "assets/hero-desktop-gotas.png", mobileImg: "assets/hero-mobile.png", actions: true },
-    { kind: "photo", img: "assets/hero-desktop-capsulas.png", mobileImg: "assets/hero-mobile.png", actions: true },
+    {
+      kind: "photo",
+      img: "assets/hero-desktop-gotas.png",
+      mobileImg: "assets/hero-mobile-gotas.png",
+      title: "Óleo de Avestruz natural",
+      text: "Gotas, cápsulas e kits com entrega em todo o Brasil.",
+      button: "Conhecer produtos",
+      href: "#produtos",
+      actions: true,
+    },
+    {
+      kind: "photo",
+      img: "assets/hero-desktop-capsulas.png",
+      mobileImg: "assets/hero-mobile-capsulas.png",
+      title: "Kits com até 37% off",
+      text: "Leve mais, pague menos e mantenha sua rotina por mais tempo.",
+      button: "Ver kits",
+      href: "#kits",
+      actions: true,
+    },
     { kind: "frete" },
     { kind: "kit" },
   ];
@@ -168,10 +186,17 @@ function Hero({ autoplay = true, viewMode = "desktop" }) {
                 )}
               </div>
             )}
-            {/* Mobile-only image variant used by mobile preview */}
-            {s.kind === "photo" && viewMode !== "mobile" && (
-              <div className="hero-image-wrap mobile-only" style={{ display: 'none' }}>
+            {s.kind === "photo" && (
+              <div className="hero-image-wrap mobile-only">
                 <img src={s.mobileImg} alt="" />
+                <div className="mobile-hero-copy">
+                  <span className="mobile-hero-kicker">Amazon BSB</span>
+                  <h1>{s.title}</h1>
+                  <p>{s.text}</p>
+                  <a href={s.href} className="btn btn-primary">
+                    {s.button} <Icon.ArrowRight size={16} />
+                  </a>
+                </div>
               </div>
             )}
             {s.kind === "frete" && (
@@ -634,7 +659,11 @@ function AudioTestimonials() {
   const [durations, setDurations] = useState({});
   const viewportRef = useRef(null);
   const audioRef = useRef(null);
+  const dragRef = useRef({ active: false, startX: 0, deltaX: 0, moved: false });
+  const suppressClickRef = useRef(false);
   const [perPage, setPerPage] = useState(4);
+  const [dragOffset, setDragOffset] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
 
   const formatDuration = (seconds) => {
     if (!Number.isFinite(seconds)) return "--:--";
@@ -689,7 +718,57 @@ function AudioTestimonials() {
   const gap = 20;
   const offset = safe * (cardWidth + gap);
 
+  const startDrag = (event) => {
+    if (event.pointerType === "mouse" && event.button !== 0) return;
+    dragRef.current = { active: true, startX: event.clientX, deltaX: 0, moved: false };
+    setIsDragging(true);
+    viewportRef.current?.setPointerCapture?.(event.pointerId);
+  };
+
+  const moveDrag = (event) => {
+    const drag = dragRef.current;
+    if (!drag.active) return;
+
+    const deltaX = event.clientX - drag.startX;
+    drag.deltaX = deltaX;
+    drag.moved = Math.abs(deltaX) > 6;
+    dragRef.current = drag;
+
+    if (drag.moved) {
+      event.preventDefault();
+      setDragOffset(deltaX);
+    }
+  };
+
+  const endDrag = (event) => {
+    const drag = dragRef.current;
+    if (!drag.active) return;
+
+    viewportRef.current?.releasePointerCapture?.(event.pointerId);
+    setDragOffset(0);
+    setIsDragging(false);
+
+    if (drag.moved) {
+      suppressClickRef.current = true;
+      if (Math.abs(drag.deltaX) > 48) {
+        setPage((current) => {
+          const currentSafe = Math.min(current, maxPage);
+          return drag.deltaX < 0
+            ? Math.min(maxPage, currentSafe + 1)
+            : Math.max(0, currentSafe - 1);
+        });
+      }
+      window.setTimeout(() => {
+        suppressClickRef.current = false;
+      }, 80);
+    }
+
+    dragRef.current = { active: false, startX: 0, deltaX: 0, moved: false };
+  };
+
   const togglePlay = (i) => {
+    if (suppressClickRef.current) return;
+
     const audio = audioRef.current;
     if (!audio) return;
 
@@ -717,8 +796,22 @@ function AudioTestimonials() {
         <h2 className="section-title">Ouça quem usa, <em>em primeira pessoa.</em></h2>
         <p className="section-sub">Depoimentos reais de clientes que incluíram o Óleo de Avestruz Amazon BSB na rotina. Toque no card para escutar.</p>
       </div>
-      <div className="audio-viewport" ref={viewportRef}>
-        <div className="audio-track" style={{ transform: `translateX(-${offset}px)`, justifyContent: maxPage === 0 ? "center" : "flex-start" }}>
+      <div
+        className="audio-viewport"
+        ref={viewportRef}
+        onPointerDown={startDrag}
+        onPointerMove={moveDrag}
+        onPointerUp={endDrag}
+        onPointerCancel={endDrag}
+      >
+        <div
+          className="audio-track"
+          style={{
+            transform: `translateX(${dragOffset - offset}px)`,
+            justifyContent: maxPage === 0 ? "center" : "flex-start",
+            transition: isDragging ? "none" : undefined,
+          }}
+        >
           {items.map((it, i) => (
             <div
               key={i}

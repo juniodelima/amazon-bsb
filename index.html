@@ -190,11 +190,17 @@
     aspect-ratio: 1555 / 1011;
     background: var(--green-800);
   }
+  .hero-image-wrap.mobile-only {
+    display: none;
+  }
   .hero-image-wrap img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     object-position: center;
+  }
+  .mobile-hero-copy {
+    display: none;
   }
   /* Promo banner slides (non-photo) */
   .hero-promo {
@@ -326,6 +332,61 @@
     flex-wrap: wrap;
   }
   .hero-microcopy span { display: inline-flex; align-items: center; gap: 6px; }
+
+  .hero-image-wrap.mobile-only::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(180deg, rgba(15, 21, 10, 0.1) 0%, rgba(15, 21, 10, 0.38) 42%, rgba(15, 21, 10, 0.86) 100%),
+      linear-gradient(90deg, rgba(15, 21, 10, 0.55) 0%, rgba(15, 21, 10, 0) 68%);
+    z-index: 1;
+    pointer-events: none;
+  }
+  .hero-image-wrap.mobile-only .mobile-hero-copy {
+    position: absolute;
+    left: 24px;
+    right: 24px;
+    bottom: 74px;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    color: var(--cream-50);
+  }
+  .mobile-hero-kicker {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(245, 240, 216, 0.82);
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: 1px solid rgba(245, 240, 216, 0.32);
+    background: rgba(15, 21, 10, 0.22);
+    backdrop-filter: blur(8px);
+  }
+  .mobile-hero-copy h1 {
+    margin: 0;
+    max-width: 12ch;
+    font-size: clamp(38px, 11vw, 54px);
+    line-height: 0.98;
+    font-weight: 800;
+    letter-spacing: 0;
+  }
+  .mobile-hero-copy p {
+    margin: 0;
+    max-width: 28ch;
+    color: rgba(245, 240, 216, 0.86);
+    font-size: 15px;
+    line-height: 1.45;
+  }
+  .mobile-hero-copy .btn {
+    margin-top: 8px;
+    padding: 13px 20px;
+    font-size: 13px;
+  }
 
   .hero-controls {
     position: absolute;
@@ -1126,7 +1187,11 @@
     overflow: visible;
     margin: 0 -32px;
     padding: 0 32px;
+    cursor: grab;
+    touch-action: pan-y;
+    user-select: none;
   }
+  .audio-viewport:active { cursor: grabbing; }
   .audio-track {
     display: flex;
     gap: 20px;
@@ -1658,6 +1723,7 @@
   /* Mobile uses tall vertical hero */
   body.mobile-preview .hero-image-wrap { aspect-ratio: 941 / 1672; }
   body.mobile-preview .hero-image-wrap.desktop-only { display: none; }
+  body.mobile-preview .hero-image-wrap.mobile-only { display: block; }
   body.mobile-preview .hero-promo { aspect-ratio: 941 / 1500; padding: 60px 32px; }
   body.mobile-preview .hero-actions { bottom: 14%; left: 8%; flex-direction: column; align-items: flex-start; gap: 8px; }
   body.mobile-preview .hero-actions .btn { padding: 12px 20px; font-size: 13px; }
@@ -1731,6 +1797,7 @@
     body:not(.mobile-preview) .footer-top { grid-template-columns: 1fr 1fr; gap: 32px; }
     body:not(.mobile-preview) .hero-image-wrap { aspect-ratio: 941 / 1672; }
     body:not(.mobile-preview) .hero-image-wrap.desktop-only { display: none; }
+    body:not(.mobile-preview) .hero-image-wrap.mobile-only { display: block; }
     body:not(.mobile-preview) .audio-card { flex-basis: 220px; }
     body:not(.mobile-preview) .audio-viewport { margin: 0 -20px; padding: 0 20px; }
     body:not(.mobile-preview) .showcase-grid { grid-template-columns: 1fr; }
@@ -1760,6 +1827,17 @@
     body:not(.mobile-preview) .hero-actions { bottom: 12%; left: 6%; flex-direction: column; align-items: flex-start; gap: 8px; }
     body:not(.mobile-preview) .hero-actions .btn { padding: 12px 18px; font-size: 13px; }
     body:not(.mobile-preview) .hero-microcopy { display: none; }
+    body:not(.mobile-preview) .mobile-hero-copy {
+      left: 20px;
+      right: 20px;
+      bottom: 64px;
+    }
+    body:not(.mobile-preview) .mobile-hero-copy h1 {
+      font-size: clamp(34px, 10vw, 46px);
+    }
+    body:not(.mobile-preview) .mobile-hero-copy p {
+      font-size: 14px;
+    }
     body:not(.mobile-preview) .hero-dots { bottom: 14px; }
     body:not(.mobile-preview) .hero-dots button { width: 16px; }
     body:not(.mobile-preview) .hero-dots button.active { width: 28px; }
