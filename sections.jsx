@@ -136,9 +136,9 @@ function Hero({ autoplay = true, viewMode = "desktop" }) {
       kind: "photo",
       img: "assets/hero-desktop-gotas.png",
       mobileImg: "assets/hero-mobile-gotas.png",
-      title: "Óleo de Avestruz natural",
-      text: "Gotas, cápsulas e kits com entrega em todo o Brasil.",
-      button: "Conhecer produtos",
+      title: "Frete grátis a partir de R$ 150",
+      text: "Receba seu Óleo de Avestruz em todo o Brasil com mais economia.",
+      button: "Aproveite agora",
       href: "#produtos",
       actions: true,
     },
@@ -148,7 +148,7 @@ function Hero({ autoplay = true, viewMode = "desktop" }) {
       mobileImg: "assets/hero-mobile-capsulas.png",
       title: "Kits com até 37% off",
       text: "Leve mais, pague menos e mantenha sua rotina por mais tempo.",
-      button: "Ver kits",
+      button: "Ver kits com desconto",
       href: "#kits",
       actions: true,
     },
@@ -166,7 +166,6 @@ function Hero({ autoplay = true, viewMode = "desktop" }) {
     if (event.pointerType === "mouse" && event.button !== 0) return;
     dragRef.current = { active: true, startX: event.clientX, deltaX: 0, moved: false };
     setIsDragging(true);
-    event.currentTarget.setPointerCapture?.(event.pointerId);
   };
 
   const moveDrag = (event) => {
@@ -188,7 +187,6 @@ function Hero({ autoplay = true, viewMode = "desktop" }) {
     const drag = dragRef.current;
     if (!drag.active) return;
 
-    event.currentTarget.releasePointerCapture?.(event.pointerId);
     setDragOffset(0);
     setIsDragging(false);
 
@@ -746,7 +744,6 @@ function AudioTestimonials() {
     if (event.pointerType === "mouse" && event.button !== 0) return;
     dragRef.current = { active: true, startX: event.clientX, deltaX: 0, moved: false };
     setIsDragging(true);
-    viewportRef.current?.setPointerCapture?.(event.pointerId);
   };
 
   const moveDrag = (event) => {
@@ -768,7 +765,6 @@ function AudioTestimonials() {
     const drag = dragRef.current;
     if (!drag.active) return;
 
-    viewportRef.current?.releasePointerCapture?.(event.pointerId);
     setDragOffset(0);
     setIsDragging(false);
 
@@ -854,7 +850,15 @@ function AudioTestimonials() {
                 </span>
                 <span className="duration">{durations[i] || "--:--"}</span>
               </div>
-              <button className="play-center" aria-label={playing === i ? "Pausar" : "Tocar"}>
+              <button
+                type="button"
+                className="play-center"
+                aria-label={playing === i ? "Pausar" : "Tocar"}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  togglePlay(i);
+                }}
+              >
                 {playing === i ? (
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
                     <rect x="6" y="5" width="4" height="14" rx="1"/>
