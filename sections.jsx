@@ -128,6 +128,9 @@ function Header({ cartCount, onCartOpen }) {
 /* ---------- Hero carousel ---------- */
 function Hero({ autoplay = true, viewMode = "desktop" }) {
   const [idx, setIdx] = useState(0);
+  const dragRef = useRef({ active: false, startX: 0, deltaX: 0, moved: false });
+  const [dragOffset, setDragOffset] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
   const slides = [
     {
       kind: "photo",
@@ -149,8 +152,6 @@ function Hero({ autoplay = true, viewMode = "desktop" }) {
       href: "#kits",
       actions: true,
     },
-    { kind: "frete" },
-    { kind: "kit" },
   ];
 
   useEffect(() => {
@@ -161,9 +162,58 @@ function Hero({ autoplay = true, viewMode = "desktop" }) {
 
   const go = (n) => setIdx((n + slides.length) % slides.length);
 
+  const startDrag = (event) => {
+    if (event.pointerType === "mouse" && event.button !== 0) return;
+    dragRef.current = { active: true, startX: event.clientX, deltaX: 0, moved: false };
+    setIsDragging(true);
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+  };
+
+  const moveDrag = (event) => {
+    const drag = dragRef.current;
+    if (!drag.active) return;
+
+    const deltaX = event.clientX - drag.startX;
+    drag.deltaX = deltaX;
+    drag.moved = Math.abs(deltaX) > 6;
+    dragRef.current = drag;
+
+    if (drag.moved) {
+      event.preventDefault();
+      setDragOffset(deltaX);
+    }
+  };
+
+  const endDrag = (event) => {
+    const drag = dragRef.current;
+    if (!drag.active) return;
+
+    event.currentTarget.releasePointerCapture?.(event.pointerId);
+    setDragOffset(0);
+    setIsDragging(false);
+
+    if (drag.moved && Math.abs(drag.deltaX) > 48) {
+      go(drag.deltaX < 0 ? idx + 1 : idx - 1);
+    }
+
+    dragRef.current = { active: false, startX: 0, deltaX: 0, moved: false };
+  };
+
   return (
-    <section className="hero">
-      <div className="hero-track" style={{ transform: `translateX(-${idx * 100}%)` }}>
+    <section
+      className="hero"
+      onPointerDown={startDrag}
+      onPointerMove={moveDrag}
+      onPointerUp={endDrag}
+      onPointerCancel={endDrag}
+    >
+      <div
+        className="hero-track"
+        style={{
+          transform: `translateX(calc(-${idx * 100}% + ${dragOffset}px))`,
+          transition: isDragging ? "none" : undefined,
+        }}
+      >
         {slides.map((s, i) => (
           <div key={i} className="hero-slide">
             {s.kind === "photo" && (
@@ -196,32 +246,6 @@ function Hero({ autoplay = true, viewMode = "desktop" }) {
                   <a href={s.href} className="btn btn-primary">
                     {s.button} <Icon.ArrowRight size={16} />
                   </a>
-                </div>
-              </div>
-            )}
-            {s.kind === "frete" && (
-              <div className="hero-promo frete">
-                <div className="deco"></div>
-                <div className="content">
-                  <span className="kicker">★ Promoção do mês</span>
-                  <div className="big-frete">
-                    <span style={{ fontSize: 18, fontWeight: 600, color: 'rgba(245,240,216,0.7)', marginBottom: 4 }}>Frete</span>
-                    <span className="num">GRÁTIS</span>
-                    <span style={{ fontSize: 22, fontWeight: 600, marginTop: 8 }}>nas compras acima de R$ 150,00</span>
-                  </div>
-                  <p>Entrega em todo o Brasil. Quanto mais você leva, mais economiza — kits saem com até 37% de desconto.</p>
-                  <a href="#produtos" className="btn btn-gold">Aproveite agora <Icon.ArrowRight size={16} /></a>
-                </div>
-              </div>
-            )}
-            {s.kind === "kit" && (
-              <div className="hero-promo kit">
-                <div className="deco"></div>
-                <div className="content">
-                  <span className="kicker">⚡ Oferta limitada</span>
-                  <h2>Kits com até <em>37% off</em><br/>Leve mais, pague menos.</h2>
-                  <p>Garanta meses de uso contínuo com economia real. O kit mais pedido é o 3x cápsulas de 90 unidades — 135 dias com Ômegas 3, 6, 7 e 9.</p>
-                  <a href="#kits" className="btn btn-primary">Ver kits com desconto <Icon.ArrowRight size={16} /></a>
                 </div>
               </div>
             )}
