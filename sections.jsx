@@ -134,7 +134,7 @@ function Hero({ autoplay = true, viewMode = "desktop" }) {
   const slides = [
     {
       kind: "photo",
-      img: "assets/hero-desktop-gotas.png",
+      img: "assets/hero-desktop-frete.png",
       mobileImg: "assets/hero-mobile-gotas.png",
       title: "Frete grátis a partir de R$ 150",
       text: "Receba seu Óleo de Avestruz em todo o Brasil com mais economia.",
@@ -144,7 +144,7 @@ function Hero({ autoplay = true, viewMode = "desktop" }) {
     },
     {
       kind: "photo",
-      img: "assets/hero-desktop-capsulas.png",
+      img: "assets/hero-desktop-kits.png",
       mobileImg: "assets/hero-mobile-capsulas.png",
       title: "Kits com até 37% off",
       text: "Leve mais, pague menos e mantenha sua rotina por mais tempo.",
@@ -218,19 +218,14 @@ function Hero({ autoplay = true, viewMode = "desktop" }) {
               <div className="hero-image-wrap desktop-only">
                 <img src={s.img} alt="Óleo de Avestruz Natural — Amazon BSB" />
                 {s.actions && (
-                  <>
-                    <div className="hero-actions">
-                      <a href="#produtos" className="btn btn-primary">
-                        Quero meu Óleo de Avestruz <Icon.ArrowRight size={16} />
-                      </a>
-                      <a href="#kits" className="btn btn-ghost">Ver kits</a>
-                    </div>
-                    <div className="hero-microcopy">
-                      <span><Icon.Check size={12} /> Frete grátis acima de R$150</span>
-                      <span><Icon.Check size={12} /> 3x sem juros</span>
-                      <span><Icon.Check size={12} /> 100% Natural</span>
-                    </div>
-                  </>
+                  <div className="desktop-hero-copy">
+                    <span className="desktop-hero-kicker">Amazon BSB</span>
+                    <h1>{s.title}</h1>
+                    <p>{s.text}</p>
+                    <a href={s.href} className="btn btn-primary">
+                      {s.button} <Icon.ArrowRight size={16} />
+                    </a>
+                  </div>
                 )}
               </div>
             )}
