@@ -622,18 +622,26 @@ function WhatsAppFloat() {
 /* ---------- Audio testimonials carousel ---------- */
 function AudioTestimonials() {
   const items = [
-    { name: "Marina Souza", city: "Brasília, DF", initials: "MS", tone: "tone-a", duration: "1:24", quote: "Mais disposição em 3 semanas" },
-    { name: "Carlos Ribeiro", city: "Goiânia, GO", initials: "CR", tone: "tone-b", duration: "2:08", quote: "A pele da minha esposa mudou" },
-    { name: "Patrícia Lima", city: "São Paulo, SP", initials: "PL", tone: "tone-c", duration: "0:58", quote: "Uso direto na salada, prático" },
-    { name: "Joaquim Alves", city: "Recife, PE", initials: "JA", tone: "tone-d", duration: "1:42", quote: "Cápsulas que cabem na rotina" },
-    { name: "Renata Castro", city: "Curitiba, PR", initials: "RC", tone: "tone-e", duration: "1:11", quote: "Minha mãe ama o sabor das gotas" },
-    { name: "Diego Martins", city: "Belo Horizonte, MG", initials: "DM", tone: "tone-f", duration: "2:35", quote: "Chegou rápido e bem embalado" },
+    { name: "Lucia", city: "Brasília, DF", initials: "LU", tone: "tone-a", audio: "assets/depoimento-lucia.mp3" },
+    { name: "Neusa", city: "Goiânia, GO", initials: "NE", tone: "tone-b", audio: "assets/depoimento-neusa.mp3" },
+    { name: "DR. Mauro", city: "São Paulo, SP", initials: "DM", tone: "tone-c", audio: "assets/depoimento-mauro.mp3" },
+    { name: "Maria Ferreira", city: "Goiânia, GO", initials: "MF", tone: "tone-d", audio: "assets/depoimento-maria-ferreira.mp3" },
+    { name: "Teresa", city: "Brasília, DF", initials: "TE", tone: "tone-e", audio: "assets/depoimento-teresa.mp3" },
   ];
 
   const [page, setPage] = useState(0);
   const [playing, setPlaying] = useState(null);
+  const [durations, setDurations] = useState({});
   const viewportRef = useRef(null);
+  const audioRef = useRef(null);
   const [perPage, setPerPage] = useState(4);
+
+  const formatDuration = (seconds) => {
+    if (!Number.isFinite(seconds)) return "--:--";
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60).toString().padStart(2, "0");
+    return `${mins}:${secs}`;
+  };
 
   useEffect(() => {
     const calc = () => {
@@ -654,6 +662,27 @@ function AudioTestimonials() {
     };
   }, []);
 
+  useEffect(() => {
+    let active = true;
+    const loaders = items.map((it, i) => {
+      const audio = new Audio(it.audio);
+      audio.preload = "metadata";
+      audio.onloadedmetadata = () => {
+        if (!active) return;
+        setDurations((prev) => ({ ...prev, [i]: formatDuration(audio.duration) }));
+      };
+      return audio;
+    });
+    return () => {
+      active = false;
+      loaders.forEach((audio) => {
+        audio.onloadedmetadata = null;
+        audio.src = "";
+      });
+      if (audioRef.current) audioRef.current.pause();
+    };
+  }, []);
+
   const maxPage = Math.max(0, items.length - perPage);
   const safe = Math.min(page, maxPage);
   const cardWidth = 280;
@@ -661,18 +690,35 @@ function AudioTestimonials() {
   const offset = safe * (cardWidth + gap);
 
   const togglePlay = (i) => {
-    setPlaying(playing === i ? null : i);
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    if (playing === i) {
+      audio.pause();
+      setPlaying(null);
+      return;
+    }
+
+    audio.src = items[i].audio;
+    audio.currentTime = 0;
+    setPlaying(i);
+
+    const play = audio.play();
+    if (play && typeof play.catch === "function") {
+      play.catch(() => setPlaying(null));
+    }
   };
 
   return (
     <section className="audios section">
+      <audio ref={audioRef} preload="metadata" onEnded={() => setPlaying(null)} />
       <div className="section-head">
         <span className="section-kicker">Depoimentos em áudio</span>
         <h2 className="section-title">Ouça quem usa, <em>em primeira pessoa.</em></h2>
         <p className="section-sub">Depoimentos reais de clientes que incluíram o Óleo de Avestruz Amazon BSB na rotina. Toque no card para escutar.</p>
       </div>
       <div className="audio-viewport" ref={viewportRef}>
-        <div className="audio-track" style={{ transform: `translateX(-${offset}px)` }}>
+        <div className="audio-track" style={{ transform: `translateX(-${offset}px)`, justifyContent: maxPage === 0 ? "center" : "flex-start" }}>
           {items.map((it, i) => (
             <div
               key={i}
@@ -683,14 +729,13 @@ function AudioTestimonials() {
               <div className="placeholder-portrait">
                 <div className="grain"></div>
                 <div className="initials">{it.initials}</div>
-                <div className="label">📷 foto do cliente</div>
               </div>
               <div className="grad"></div>
               <div className="top">
                 <span className="badge">
                   <Icon.WhatsApp size={11} /> Áudio
                 </span>
-                <span className="duration">{it.duration}</span>
+                <span className="duration">{durations[i] || "--:--"}</span>
               </div>
               <button className="play-center" aria-label={playing === i ? "Pausar" : "Tocar"}>
                 {playing === i ? (
@@ -736,7 +781,6 @@ function AudioTestimonials() {
     </section>
   );
 }
-
 /* ---------- Benefits Showcase (photo mosaic) ---------- */
 function BenefitsShowcase() {
   return (
