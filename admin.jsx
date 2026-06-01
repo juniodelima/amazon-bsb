@@ -253,25 +253,44 @@ function Orders({ orders, setOrders }) {
 }
 
 // ---- Customers/Leads tab ----
-function Customers({ leads, orders }) {
+function Customers({ leads, orders, customers }) {
   const [search, setSearch] = useState("");
 
-  // merge leads + order customers by phone
+  // merge amazo_customers + leads + order customers by phone
   const allCustomers = useMemo(() => {
     const map = {};
+
+    // 1. Base: registered customers (have name + address from checkout)
+    Object.values(customers || {}).forEach(c => {
+      map[c.phone] = {
+        phone: c.phone, name: c.name || "", cep: c.cep || "",
+        address: c.address || "", coupon: "", firstSeen: c.lastSeen || "",
+        source: "compra", orders: [], orderCount: c.orderCount || 0,
+      };
+    });
+
+    // 2. Leads from popup (may not have ordered yet)
     leads.forEach(l => {
       const k = l.phone;
-      if (!map[k]) map[k] = { phone: k, name:"", coupon: l.coupon, firstSeen: l.date, source: l.source, orders: [] };
+      if (!map[k]) map[k] = { phone: k, name:"", cep:"", address:"", coupon: l.coupon, firstSeen: l.date, source: "popup", orders: [], orderCount: 0 };
+      else if (!map[k].coupon) map[k].coupon = l.coupon;
+      if (!map[k].firstSeen || new Date(l.date) < new Date(map[k].firstSeen)) map[k].firstSeen = l.date;
     });
+
+    // 3. Orders (ensure all order customers appear)
     orders.forEach(o => {
       const k = (o.customer.phone || "").replace(/\D/g,"");
       if (!k) return;
-      if (!map[k]) map[k] = { phone: k, name: o.customer.name, coupon:"", firstSeen: o.date, source:"pedido", orders: [] };
-      else if (o.customer.name) map[k].name = o.customer.name;
+      if (!map[k]) map[k] = { phone: k, name: o.customer.name || "", cep:"", address:"", coupon:"", firstSeen: o.date, source:"pedido", orders: [], orderCount: 0 };
+      else {
+        if (o.customer.name && !map[k].name) map[k].name = o.customer.name;
+        if (!map[k].firstSeen || new Date(o.date) < new Date(map[k].firstSeen)) map[k].firstSeen = o.date;
+      }
       map[k].orders.push(o);
     });
+
     return Object.values(map).sort((a,b) => new Date(b.firstSeen) - new Date(a.firstSeen));
-  }, [leads, orders]);
+  }, [leads, orders, customers]);
 
   const filtered = allCustomers.filter(c => {
     const q = search.toLowerCase();
@@ -289,17 +308,24 @@ function Customers({ leads, orders }) {
         <table style={{ width:"100%", borderCollapse:"collapse", fontSize:13 }}>
           <thead>
             <tr style={{ background:"#faf7e8", borderBottom:"1px solid #e3decb" }}>
-              {["WhatsApp","Nome","Cupom","Pedidos","Total gasto","Origem","Desde"].map(h => (
+              {["WhatsApp","Nome","Endereço","Cupom","Pedidos","Total gasto","Origem","Desde"].map(h => (
                 <th key={h} style={{ padding:"12px 16px", textAlign:"left", fontWeight:700, color:"#3b4128", fontSize:12 }}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 && (
-              <tr><td colSpan={7} style={{ padding:"32px 16px", textAlign:"center", color:"#6b6f56" }}>Nenhum cliente encontrado.</td></tr>
+              <tr><td colSpan={8} style={{ padding:"32px 16px", textAlign:"center", color:"#6b6f56" }}>Nenhum cliente encontrado.</td></tr>
             )}
             {filtered.map(c => {
               const spent = c.orders.filter(o => o.status !== "cancelado").reduce((s,o) => s+o.total, 0);
+              const totalOrders = c.orders.length || c.orderCount || 0;
+              const sourceLabel = { compra:"Compra", popup:"Popup WA", pedido:"Pedido" }[c.source] || c.source;
+              const sourceColor = c.source === "popup"
+                ? { bg:"#e8f4fd", color:"#2b6cb0" }
+                : c.source === "compra"
+                ? { bg:"#e8edd4", color:"#3d4a2a" }
+                : { bg:"#fef3c7", color:"#92400e" };
               return (
                 <tr key={c.phone} style={{ borderBottom:"1px solid #e3decb" }}>
                   <td style={{ padding:"12px 16px" }}>
@@ -308,17 +334,25 @@ function Customers({ leads, orders }) {
                     </a>
                   </td>
                   <td style={{ padding:"12px 16px", color:"#3b4128", fontWeight:600 }}>{c.name || "—"}</td>
+                  <td style={{ padding:"12px 16px", color:"#6b6f56", fontSize:12 }}>
+                    {c.address ? (
+                      <span title={c.address}>
+                        {c.cep ? <b style={{ color:"#3b4128" }}>{c.cep} · </b> : null}
+                        {c.address.length > 28 ? c.address.slice(0,28) + "…" : c.address}
+                      </span>
+                    ) : "—"}
+                  </td>
                   <td style={{ padding:"12px 16px" }}>
                     {c.coupon ? <span style={{ fontFamily:"'DM Mono',monospace", fontSize:11, background:"#e8edd4", padding:"3px 8px", borderRadius:6, color:"#3d4a2a" }}>{c.coupon}</span> : "—"}
                   </td>
-                  <td style={{ padding:"12px 16px", textAlign:"center", fontWeight:700, color:"#2a3618" }}>{c.orders.length}</td>
+                  <td style={{ padding:"12px 16px", textAlign:"center", fontWeight:700, color:"#2a3618" }}>{totalOrders}</td>
                   <td style={{ padding:"12px 16px", fontWeight:700, color:"#2a3618" }}>{spent > 0 ? BRL(spent) : "—"}</td>
                   <td style={{ padding:"12px 16px" }}>
-                    <span style={{ padding:"3px 10px", borderRadius:999, fontSize:11, fontWeight:700, background: c.source==="popup" ? "#e8f4fd" : "#e8edd4", color: c.source==="popup" ? "#2b6cb0" : "#3d4a2a" }}>
-                      {c.source === "popup" ? "Popup WA" : "Pedido"}
+                    <span style={{ padding:"3px 10px", borderRadius:999, fontSize:11, fontWeight:700, background: sourceColor.bg, color: sourceColor.color }}>
+                      {sourceLabel}
                     </span>
                   </td>
-                  <td style={{ padding:"12px 16px", color:"#6b6f56", whiteSpace:"nowrap" }}>{new Date(c.firstSeen).toLocaleDateString("pt-BR")}</td>
+                  <td style={{ padding:"12px 16px", color:"#6b6f56", whiteSpace:"nowrap" }}>{c.firstSeen ? new Date(c.firstSeen).toLocaleDateString("pt-BR") : "—"}</td>
                 </tr>
               );
             })}
@@ -395,12 +429,15 @@ function AdminApp() {
   const [leads, setLeads]   = useState([]);
   const [stock, setStock]   = useState({});
 
+  const [customers, setCustomers] = useState({});
+
   useEffect(() => {
     if (!authed) return;
     seedIfEmpty();
-    setOrders(JSON.parse(localStorage.getItem("amazo_orders") || "[]"));
-    setLeads(JSON.parse(localStorage.getItem("amazo_leads")  || "[]"));
-    setStock(JSON.parse(localStorage.getItem("amazo_stock")  || "{}"));
+    setOrders(JSON.parse(localStorage.getItem("amazo_orders")    || "[]"));
+    setLeads(JSON.parse(localStorage.getItem("amazo_leads")      || "[]"));
+    setStock(JSON.parse(localStorage.getItem("amazo_stock")      || "{}"));
+    setCustomers(JSON.parse(localStorage.getItem("amazo_customers") || "{}"));
   }, [authed]);
 
   if (!authed) return <Login onLogin={() => setAuthed(true)} />;
@@ -437,7 +474,7 @@ function AdminApp() {
 
         {tab === "dashboard" && <Dashboard orders={orders} leads={leads} stock={stock} />}
         {tab === "orders"    && <Orders    orders={orders} setOrders={setOrders} />}
-        {tab === "customers" && <Customers leads={leads} orders={orders} />}
+        {tab === "customers" && <Customers leads={leads} orders={orders} customers={customers} />}
         {tab === "stock"     && <Stock     stock={stock} setStock={setStock} />}
       </div>
     </div>

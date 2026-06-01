@@ -1778,6 +1778,43 @@
   .wa-coupon { background: var(--cream-100); border: 1.5px dashed var(--green-400); border-radius: 12px; padding: 14px 20px; margin: 0 0 20px 0; display: flex; align-items: center; justify-content: center; gap: 10px; }
   .wa-coupon-code { font-family: 'DM Mono', monospace; font-size: 18px; font-weight: 700; color: var(--green-800); letter-spacing: 0.12em; }
 
+  /* ---------- Checkout Modal ---------- */
+  .co-backdrop { position:fixed;inset:0;background:rgba(20,25,10,.6);z-index:350;backdrop-filter:blur(4px);animation:fadeIn .2s ease; }
+  .co-modal { position:fixed;inset:0;z-index:351;display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto; }
+  .co-box { background:var(--paper);border-radius:24px;width:100%;max-width:480px;position:relative;box-shadow:0 32px 80px rgba(20,25,10,.35);animation:slideUp .28s cubic-bezier(.65,.05,.35,1); }
+  .co-header { padding:28px 32px 0 32px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px; }
+  .co-header h3 { margin:0 0 4px 0;font-size:20px;font-weight:800;color:var(--green-900); }
+  .co-header .co-sub { margin:0;font-size:14px;color:var(--muted); }
+  .co-btn-close { width:34px;height:34px;border-radius:50%;background:var(--cream-100);border:none;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;color:var(--muted);flex-shrink:0;transition:background .15s; }
+  .co-btn-close:hover { background:var(--cream-200); }
+  .co-autofill-badge { margin:14px 32px 0 32px;padding:10px 14px;background:var(--green-100);border-radius:10px;font-size:13px;font-weight:600;color:var(--green-800);display:flex;align-items:center;gap:8px; }
+  .co-body { padding:20px 32px 32px 32px;display:flex;flex-direction:column;gap:14px; }
+  .co-field { display:flex;flex-direction:column;gap:5px; }
+  .co-field label { font-size:12px;font-weight:700;color:var(--ink-soft);letter-spacing:0.02em; }
+  .co-field input { padding:12px 14px;border-radius:10px;border:1.5px solid var(--line);font-size:15px;font-family:inherit;background:var(--cream-50);color:var(--ink);outline:none;transition:border-color .15s;width:100%;box-sizing:border-box; }
+  .co-field input:focus { border-color:var(--green-600);background:white; }
+  .co-field input.err { border-color:#e53e3e; }
+  .co-field .co-err { font-size:12px;color:#e53e3e; }
+  .co-confirm { padding:15px;border-radius:12px;background:var(--green-800);color:var(--cream-50);font-size:15px;font-weight:700;border:none;cursor:pointer;transition:background .15s;width:100%; }
+  .co-confirm:hover { background:var(--green-900); }
+  .co-note { font-size:12.5px;color:var(--muted);line-height:1.5;margin:0;text-align:center; }
+  .co-row2 { display:grid;grid-template-columns:130px 1fr;gap:12px; }
+  .co-success { padding:44px 32px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px; }
+  .co-success-emoji { font-size:52px;line-height:1; }
+  .co-success h3 { margin:0;font-size:24px;font-weight:800;color:var(--green-900); }
+  .co-success .co-order-code { font-family:'DM Mono',monospace;font-size:13px;color:var(--muted);background:var(--cream-100);padding:6px 14px;border-radius:999px; }
+  .co-success p { font-size:14.5px;color:var(--muted);line-height:1.55;margin:0;max-width:340px; }
+  .co-wa-link { display:inline-flex;align-items:center;gap:8px;padding:14px 24px;border-radius:12px;background:#25d366;color:white;font-weight:700;font-size:15px;transition:background .15s; }
+  .co-wa-link:hover { background:#22c55e; }
+  .co-success-close { background:none;border:none;cursor:pointer;font-size:13px;color:var(--muted);padding:4px 8px;transition:color .15s; }
+  .co-success-close:hover { color:var(--ink); }
+  @media (max-width:520px) {
+    .co-header,.co-body { padding-left:20px;padding-right:20px; }
+    .co-autofill-badge { margin-left:20px;margin-right:20px; }
+    .co-row2 { grid-template-columns:1fr; }
+    .co-success { padding:32px 24px; }
+  }
+
   /* ---------- Mobile preview (used by Tweaks) ---------- */
   body.mobile-preview {
     background: #1a1a1a;

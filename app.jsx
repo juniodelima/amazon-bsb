@@ -144,6 +144,7 @@ function App() {
   const [tweakState, setTweakState] = useState(() => window.__tweaks || TWEAK_DEFAULTS);
   const [modalProduct, setModalProduct] = useState(null);
   const [waPopup, setWaPopup] = useState(false);
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
 
   // sync with tweaks
   useEffect(() => {
@@ -172,21 +173,11 @@ function App() {
     setTimeout(() => setCartOpen(true), 350);
   }, []);
 
-  const checkout = useCallback(() => {
-    const orders = JSON.parse(localStorage.getItem("amazo_orders") || "[]");
-    orders.unshift({
-      id: "PED-" + Date.now(),
-      date: new Date().toISOString(),
-      items: items.map(i => ({ id: i.id, name: i.name, qty: i.qty, price: i.price, img: i.img || null })),
-      total: items.reduce((s, i) => s + i.price * i.qty, 0),
-      status: "pendente",
-      customer: { name: "", phone: "", email: "" },
-    });
-    localStorage.setItem("amazo_orders", JSON.stringify(orders));
+  // called by CheckoutModal after saving the order — clears cart and closes drawer
+  const onOrderDone = useCallback(() => {
     setItems([]);
     setCartOpen(false);
-    alert("✅ Pedido registrado! Nossa equipe entrará em contato pelo WhatsApp para confirmar e combinar o pagamento.");
-  }, [items]);
+  }, []);
 
   const cartCount = items.reduce((s, i) => s + i.qty, 0);
 
@@ -213,7 +204,7 @@ function App() {
         items={items}
         setItems={setItems}
         onClose={() => setCartOpen(false)}
-        onCheckout={checkout}
+        onCheckout={() => { setCartOpen(false); setCheckoutOpen(true); }}
       />
       {modalProduct && (
         <ProductModal
@@ -224,6 +215,13 @@ function App() {
         />
       )}
       {waPopup && <WhatsAppPopup onClose={() => setWaPopup(false)} />}
+      {checkoutOpen && (
+        <CheckoutModal
+          items={items}
+          onClose={() => setCheckoutOpen(false)}
+          onDone={onOrderDone}
+        />
+      )}
     </div>
   );
 }

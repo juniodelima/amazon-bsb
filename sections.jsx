@@ -1008,6 +1008,221 @@ function Footer() {
   );
 }
 
+/* ---------- Checkout Modal with customer auto-fill ---------- */
+function CheckoutModal({ items, onClose, onDone }) {
+  const [phone, setPhone]     = useState("");
+  const [name, setName]       = useState("");
+  const [cep, setCep]         = useState("");
+  const [address, setAddress] = useState("");
+  const [autoFilled, setAutoFilled] = useState(false);
+  const [errors, setErrors]   = useState({});
+  const [orderId, setOrderId] = useState(null);
+
+  const total = items.reduce((s, i) => s + i.price * i.qty, 0);
+
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = ""; };
+  }, []);
+
+  const fmtPhone = (v) => {
+    const d = v.replace(/\D/g, "").slice(0, 11);
+    if (d.length <= 2) return d;
+    if (d.length <= 7) return `(${d.slice(0,2)}) ${d.slice(2)}`;
+    return `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`;
+  };
+  const fmtCep = (v) => {
+    const d = v.replace(/\D/g, "").slice(0, 8);
+    return d.length <= 5 ? d : `${d.slice(0,5)}-${d.slice(5)}`;
+  };
+
+  const lookupCustomer = (digits) => {
+    const db = JSON.parse(localStorage.getItem("amazo_customers") || "{}");
+    const c = db[digits];
+    if (c) {
+      if (c.name)    setName(c.name);
+      if (c.cep)     setCep(c.cep);
+      if (c.address) setAddress(c.address);
+      setAutoFilled(true);
+    } else {
+      setAutoFilled(false);
+    }
+  };
+
+  const handlePhone = (v) => {
+    const fmt = fmtPhone(v);
+    setPhone(fmt);
+    setErrors(e => ({ ...e, phone: "" }));
+    const digits = fmt.replace(/\D/g, "");
+    if (digits.length >= 10) lookupCustomer(digits);
+    else setAutoFilled(false);
+  };
+
+  const validate = () => {
+    const e = {};
+    if (phone.replace(/\D/g,"").length < 10) e.phone = "WhatsApp obrigatório (com DDD).";
+    if (!name.trim()) e.name = "Nome completo obrigatório.";
+    return e;
+  };
+
+  const handleConfirm = () => {
+    const errs = validate();
+    if (Object.keys(errs).length) { setErrors(errs); return; }
+
+    const digits = phone.replace(/\D/g, "");
+    const id = "PED-" + Date.now();
+
+    // Save / update customer profile
+    const db = JSON.parse(localStorage.getItem("amazo_customers") || "{}");
+    const prev = db[digits] || {};
+    db[digits] = {
+      ...prev,
+      phone: digits,
+      name: name.trim(),
+      cep: cep || prev.cep || "",
+      address: address.trim() || prev.address || "",
+      lastSeen: new Date().toISOString(),
+      orderCount: (prev.orderCount || 0) + 1,
+    };
+    localStorage.setItem("amazo_customers", JSON.stringify(db));
+
+    // Save order with full customer data
+    const orders = JSON.parse(localStorage.getItem("amazo_orders") || "[]");
+    orders.unshift({
+      id,
+      date: new Date().toISOString(),
+      items: items.map(i => ({ id: i.id, name: i.name, qty: i.qty, price: i.price })),
+      total,
+      status: "pendente",
+      customer: { name: name.trim(), phone: digits, cep, address: address.trim() },
+    });
+    localStorage.setItem("amazo_orders", JSON.stringify(orders));
+
+    onDone(); // clear cart + close cart drawer
+    setOrderId(id);
+  };
+
+  // ---- Success screen ----
+  if (orderId) {
+    const digits = phone.replace(/\D/g, "");
+    const summary = items.map(i => `${i.name} ×${i.qty}`).join(", ");
+    const msg = encodeURIComponent(
+      `Olá Amazon BSB! Acabei de fazer um pedido.\n\nCódigo: ${orderId}\nNome: ${name}\nItens: ${summary}\nTotal: ${BRL(total)}\n\nAguardo contato para confirmar o pagamento. 😊`
+    );
+    return (
+      <>
+        <div className="co-backdrop" onClick={onClose} />
+        <div className="co-modal">
+          <div className="co-box">
+            <div className="co-success">
+              <div className="co-success-emoji">✅</div>
+              <h3>Pedido enviado!</h3>
+              <div className="co-order-code">{orderId}</div>
+              <p>
+                Nossa equipe entrará em contato pelo WhatsApp{" "}
+                <b>{fmtPhone(digits)}</b> em até 30 minutos para confirmar
+                e combinar o pagamento.
+              </p>
+              <a
+                href={`https://wa.me/5561999545567?text=${msg}`}
+                target="_blank" rel="noreferrer"
+                className="co-wa-link"
+              >
+                <Icon.WhatsApp size={18} /> Falar pelo WhatsApp
+              </a>
+              <button className="co-success-close" onClick={onClose}>Fechar</button>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  // ---- Form screen ----
+  return (
+    <>
+      <div className="co-backdrop" onClick={onClose} />
+      <div className="co-modal">
+        <div className="co-box">
+          <div className="co-header">
+            <div>
+              <h3>Finalizar pedido</h3>
+              <p className="co-sub">
+                {items.reduce((s,i) => s+i.qty, 0)} {items.reduce((s,i) => s+i.qty, 0) === 1 ? "item" : "itens"} · {BRL(total)}
+              </p>
+            </div>
+            <button className="co-btn-close" onClick={onClose} aria-label="Fechar">
+              <Icon.X size={16} />
+            </button>
+          </div>
+
+          {autoFilled && (
+            <div className="co-autofill-badge">
+              <Icon.Check size={14} /> Dados preenchidos automaticamente
+            </div>
+          )}
+
+          <div className="co-body">
+            <div className="co-field">
+              <label>WhatsApp com DDD *</label>
+              <input
+                type="tel"
+                placeholder="(61) 99999-9999"
+                value={phone}
+                onChange={e => handlePhone(e.target.value)}
+                className={errors.phone ? "err" : ""}
+                autoFocus
+              />
+              {errors.phone && <span className="co-err">{errors.phone}</span>}
+            </div>
+
+            <div className="co-field">
+              <label>Nome completo *</label>
+              <input
+                type="text"
+                placeholder="Seu nome"
+                value={name}
+                onChange={e => { setName(e.target.value); setErrors(er => ({ ...er, name: "" })); }}
+                className={errors.name ? "err" : ""}
+              />
+              {errors.name && <span className="co-err">{errors.name}</span>}
+            </div>
+
+            <div className="co-row2">
+              <div className="co-field">
+                <label>CEP</label>
+                <input
+                  type="text"
+                  placeholder="00000-000"
+                  value={cep}
+                  onChange={e => setCep(fmtCep(e.target.value))}
+                />
+              </div>
+              <div className="co-field">
+                <label>Endereço</label>
+                <input
+                  type="text"
+                  placeholder="Rua, número, bairro"
+                  value={address}
+                  onChange={e => setAddress(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <button className="co-confirm" onClick={handleConfirm}>
+              Confirmar pedido <Icon.ArrowRight size={16} />
+            </button>
+
+            <p className="co-note">
+              Nossa equipe entrará em contato pelo WhatsApp para confirmar e combinar o pagamento.
+            </p>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
 /* ---------- Product Modal ---------- */
 function ProductModal({ product, onClose, onAdd, addedMap }) {
   const [qty, setQty] = useState(1);
@@ -1218,5 +1433,5 @@ function WhatsAppPopup({ onClose }) {
 Object.assign(window, {
   ProductArt, UrgencyBar, Header, Hero, Credibility, Why, ProductCard, Products,
   Benefits, HowToUse, Testimonials, Kits, Guarantee, FAQ, WhatsAppFloat, Footer,
-  ProductModal, WhatsAppPopup,
+  ProductModal, WhatsAppPopup, CheckoutModal,
 });
