@@ -328,50 +328,50 @@ function Why() {
 }
 
 /* ---------- Product card ---------- */
-function ProductCard({ p, onAdd, added, onOpen }) {
+function ProductCard({ p, onAdd, added }) {
   return (
-    <div className="product-card" onClick={() => onOpen(p)} style={{ cursor: 'pointer' }}>
-      <div className="product-tags">
-        {p.tag === "best" && <span className="tag tag-best"><Icon.Fire size={11} /> Mais vendido</span>}
-        {p.tag === "value" && <span className="tag tag-value">Melhor custo-benefício</span>}
-        {p.tag === "frete" && <span className="tag tag-frete"><Icon.Truck size={11} /> Frete grátis</span>}
-      </div>
-      <div className={"product-img" + (p.img ? " product-img-photo" : "")}>
-        {p.img ? (
-          <img src={p.img} alt={p.name} loading="lazy" />
-        ) : (
-          <ProductArt kind={p.art} />
-        )}
-      </div>
-      <div className="product-info">
-        <div className="product-meta">
-          <span className="stars">
-            {[1,2,3,4,5].map(i => <Icon.Star key={i} size={11} filled />)}
-          </span>
-          <span>{p.rating.toFixed(1)} · {p.reviews}</span>
+    <div className="product-card">
+      <a href={"produto.html?id=" + p.id} style={{ display:"contents" }}>
+        <div className="product-tags">
+          {p.tag === "best" && <span className="tag tag-best"><Icon.Fire size={11} /> Mais vendido</span>}
+          {p.tag === "value" && <span className="tag tag-value">Melhor custo-benefício</span>}
+          {p.tag === "frete" && <span className="tag tag-frete"><Icon.Truck size={11} /> Frete grátis</span>}
         </div>
-        <h3 className="product-name">{p.name}</h3>
-        <div className="product-price-row">
-          <div>
-            {p.was && <div style={{ fontSize: 12, color: 'var(--muted)', textDecoration: 'line-through', lineHeight: 1, marginBottom: 2 }}>{BRL(p.was)}</div>}
-            <div className="product-price">{BRL(p.price)}</div>
-            <div className="product-installment">ou <b>3x de {BRL(p.parcela)}</b> sem juros</div>
+        <div className={"product-img" + (p.img ? " product-img-photo" : "")}>
+          {p.img ? (
+            <img src={p.img} alt={p.name} loading="lazy" />
+          ) : (
+            <ProductArt kind={p.art} />
+          )}
+        </div>
+        <div className="product-info">
+          <div className="product-meta">
+            <span className="stars">
+              {[1,2,3,4,5].map(i => <Icon.Star key={i} size={11} filled />)}
+            </span>
+            <span>{p.rating.toFixed(1)} · {p.reviews}</span>
+          </div>
+          <h3 className="product-name">{p.name}</h3>
+          <div className="product-price-row">
+            <div>
+              {p.was && <div style={{ fontSize: 12, color: 'var(--muted)', textDecoration: 'line-through', lineHeight: 1, marginBottom: 2 }}>{BRL(p.was)}</div>}
+              <div className="product-price">{BRL(p.price)}</div>
+              <div className="product-installment">ou <b>3x de {BRL(p.parcela)}</b> sem juros</div>
+            </div>
           </div>
         </div>
+      </a>
+      <div style={{ padding: '0 22px 22px 22px' }}>
         <div className="product-actions">
           <button
             className={"product-btn " + (added ? "added" : "")}
-            onClick={(e) => { e.stopPropagation(); onAdd(p); }}
+            onClick={() => onAdd(p)}
           >
             {added ? <><Icon.Check size={14} /> Adicionado</> : <><Icon.Bag size={14} /> Adicionar</>}
           </button>
-          <button
-            className="product-btn-secondary"
-            aria-label="Ver detalhes"
-            onClick={(e) => { e.stopPropagation(); onOpen(p); }}
-          >
+          <a href={"produto.html?id=" + p.id} className="product-btn-secondary" aria-label="Ver detalhes">
             <Icon.ChevronRight size={16} />
-          </button>
+          </a>
         </div>
       </div>
     </div>
@@ -379,7 +379,7 @@ function ProductCard({ p, onAdd, added, onOpen }) {
 }
 
 /* ---------- Products grid ---------- */
-function Products({ onAdd, addedMap, onOpen }) {
+function Products({ onAdd, addedMap }) {
   const [filter, setFilter] = useState("Todos");
   const filters = ["Todos", "Gotas", "Cápsulas", "Kits"];
   const filtered = PRODUCTS.filter(p => filter === "Todos" || p.type === filter);
@@ -398,7 +398,7 @@ function Products({ onAdd, addedMap, onOpen }) {
       </div>
       <div className="product-grid">
         {filtered.map(p => (
-          <ProductCard key={p.id} p={p} onAdd={onAdd} added={!!addedMap[p.id]} onOpen={onOpen} />
+          <ProductCard key={p.id} p={p} onAdd={onAdd} added={!!addedMap[p.id]} />
         ))}
       </div>
     </section>

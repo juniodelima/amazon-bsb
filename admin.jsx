@@ -102,6 +102,12 @@ function Dashboard({ orders, leads, stock }) {
   const revenue = orders.filter(o => o.status !== "cancelado").reduce((s, o) => s + o.total, 0);
   const lowStock = Object.values(stock).filter(s => s.qty <= s.min).length;
 
+  const sessions = JSON.parse(localStorage.getItem("amazo_checkout_sessions") || "[]");
+  const abandoned = sessions.filter(s => {
+    if (s.status !== "abandoned") return false;
+    return (Date.now() - new Date(s.startedAt).getTime()) > 30 * 60 * 1000;
+  }).slice(0, 20);
+
   // Sales by product
   const prodSales = {};
   orders.filter(o => o.status !== "cancelado").forEach(o => {
@@ -133,7 +139,51 @@ function Dashboard({ orders, leads, stock }) {
       </div>
 
       <div style={{ display:"grid", gridTemplateColumns:"1.5fr 1fr", gap:16 }}>
-        {/* Revenue chart */}
+        {/* Abandoned carts alert */}
+      {abandoned.length > 0 && (
+        <div style={{ background:"white", border:"1.5px solid #fed7d7", borderRadius:16, padding:"20px 24px" }}>
+          <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:16 }}>
+            <span style={{ fontSize:18 }}>⚠️</span>
+            <div style={{ fontSize:14, fontWeight:700, color:"#c53030" }}>
+              {abandoned.length} carrinho{abandoned.length > 1 ? "s" : ""} abandonado{abandoned.length > 1 ? "s" : ""} nas últimas horas
+            </div>
+          </div>
+          <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+            {abandoned.slice(0,5).map((s, i) => {
+              const ago = Math.round((Date.now() - new Date(s.startedAt).getTime()) / 60000);
+              const hours = Math.floor(ago / 60);
+              const mins = ago % 60;
+              const timeAgo = hours > 0 ? `${hours}h ${mins}min atrás` : `${mins}min atrás`;
+              const items = (s.cart || []).map(it => `${it.name} ×${it.qty}`).join(", ");
+              return (
+                <div key={i} style={{ display:"flex", alignItems:"center", gap:12, padding:"10px 14px", background:"#fff5f5", borderRadius:10, fontSize:13 }}>
+                  <div style={{ flex:1 }}>
+                    <span style={{ fontWeight:700, color:"#2a3618" }}>
+                      {s.phone ? (
+                        <a href={`https://wa.me/55${s.phone}`} target="_blank" rel="noreferrer" style={{ color:"#25d366" }}>
+                          {fmtPhone(s.phone)}
+                        </a>
+                      ) : "Anônimo"}
+                    </span>
+                    <span style={{ color:"#6b6f56", marginLeft:8 }}>· {items || "—"}</span>
+                  </div>
+                  <div style={{ fontWeight:700, color:"#c53030", whiteSpace:"nowrap" }}>{BRL(s.total || 0)}</div>
+                  <div style={{ color:"#6b6f56", fontSize:11, whiteSpace:"nowrap" }}>{timeAgo}</div>
+                  {s.phone && (
+                    <a href={`https://wa.me/55${s.phone}?text=${encodeURIComponent("Oi! Vi que você deixou itens no carrinho da Amazon BSB. Posso te ajudar a finalizar seu pedido? 😊")}`}
+                      target="_blank" rel="noreferrer"
+                      style={{ padding:"6px 12px", borderRadius:8, background:"#25d366", color:"white", fontWeight:700, fontSize:12, whiteSpace:"nowrap" }}>
+                      Recuperar
+                    </a>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Revenue chart */}
         <div style={{ background:"white", border:"1px solid #e3decb", borderRadius:16, padding:"24px 22px" }}>
           <div style={{ fontSize:13, fontWeight:700, color:"#2a3618", marginBottom:20 }}>Receita — últimos 7 dias</div>
           <div style={{ display:"flex", alignItems:"flex-end", gap:8, height:120 }}>

@@ -138,13 +138,13 @@ function Tweaks() {
 
 /* ---------- App ---------- */
 function App() {
-  const [items, setItems] = useState([]);
+  const [items, setItems] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("amazo_cart") || "[]"); } catch { return []; }
+  });
   const [cartOpen, setCartOpen] = useState(false);
   const [recentlyAdded, setRecentlyAdded] = useState({});
   const [tweakState, setTweakState] = useState(() => window.__tweaks || TWEAK_DEFAULTS);
-  const [modalProduct, setModalProduct] = useState(null);
   const [waPopup, setWaPopup] = useState(false);
-  const [checkoutOpen, setCheckoutOpen] = useState(false);
 
   // sync with tweaks
   useEffect(() => {
@@ -152,6 +152,11 @@ function App() {
     window.addEventListener("tweaks-changed", handler);
     return () => window.removeEventListener("tweaks-changed", handler);
   }, []);
+
+  // Sync cart to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem("amazo_cart", JSON.stringify(items));
+  }, [items]);
 
   // show WA popup after 12s (once per session)
   useEffect(() => {
@@ -173,11 +178,6 @@ function App() {
     setTimeout(() => setCartOpen(true), 350);
   }, []);
 
-  // called by CheckoutModal after saving the order — clears cart and closes drawer
-  const onOrderDone = useCallback(() => {
-    setItems([]);
-    setCartOpen(false);
-  }, []);
 
   const cartCount = items.reduce((s, i) => s + i.qty, 0);
 
@@ -188,7 +188,7 @@ function App() {
       <Hero autoplay={tweakState.heroAutoplay} viewMode={tweakState.viewMode} />
       <Credibility />
       <Why />
-      <Products onAdd={addToCart} addedMap={recentlyAdded} onOpen={setModalProduct} />
+      <Products onAdd={addToCart} addedMap={recentlyAdded} />
       <BenefitsShowcase />
       <Benefits />
       <HowToUse />
@@ -204,24 +204,9 @@ function App() {
         items={items}
         setItems={setItems}
         onClose={() => setCartOpen(false)}
-        onCheckout={() => { setCartOpen(false); setCheckoutOpen(true); }}
+        onCheckout={() => { window.location.href = "checkout.html"; }}
       />
-      {modalProduct && (
-        <ProductModal
-          product={modalProduct}
-          onClose={() => setModalProduct(null)}
-          onAdd={addToCart}
-          addedMap={recentlyAdded}
-        />
-      )}
       {waPopup && <WhatsAppPopup onClose={() => setWaPopup(false)} />}
-      {checkoutOpen && (
-        <CheckoutModal
-          items={items}
-          onClose={() => setCheckoutOpen(false)}
-          onDone={onOrderDone}
-        />
-      )}
     </div>
   );
 }
