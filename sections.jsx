@@ -328,9 +328,9 @@ function Why() {
 }
 
 /* ---------- Product card ---------- */
-function ProductCard({ p, onAdd, added }) {
+function ProductCard({ p, onAdd, added, onOpen }) {
   return (
-    <div className="product-card">
+    <div className="product-card" onClick={() => onOpen(p)} style={{ cursor: 'pointer' }}>
       <div className="product-tags">
         {p.tag === "best" && <span className="tag tag-best"><Icon.Fire size={11} /> Mais vendido</span>}
         {p.tag === "value" && <span className="tag tag-value">Melhor custo-benefício</span>}
@@ -359,10 +359,17 @@ function ProductCard({ p, onAdd, added }) {
           </div>
         </div>
         <div className="product-actions">
-          <button className={"product-btn " + (added ? "added" : "")} onClick={() => onAdd(p)}>
+          <button
+            className={"product-btn " + (added ? "added" : "")}
+            onClick={(e) => { e.stopPropagation(); onAdd(p); }}
+          >
             {added ? <><Icon.Check size={14} /> Adicionado</> : <><Icon.Bag size={14} /> Adicionar</>}
           </button>
-          <button className="product-btn-secondary" aria-label="Ver detalhes">
+          <button
+            className="product-btn-secondary"
+            aria-label="Ver detalhes"
+            onClick={(e) => { e.stopPropagation(); onOpen(p); }}
+          >
             <Icon.ChevronRight size={16} />
           </button>
         </div>
@@ -372,7 +379,7 @@ function ProductCard({ p, onAdd, added }) {
 }
 
 /* ---------- Products grid ---------- */
-function Products({ onAdd, addedMap }) {
+function Products({ onAdd, addedMap, onOpen }) {
   const [filter, setFilter] = useState("Todos");
   const filters = ["Todos", "Gotas", "Cápsulas", "Kits"];
   const filtered = PRODUCTS.filter(p => filter === "Todos" || p.type === filter);
@@ -391,7 +398,7 @@ function Products({ onAdd, addedMap }) {
       </div>
       <div className="product-grid">
         {filtered.map(p => (
-          <ProductCard key={p.id} p={p} onAdd={onAdd} added={!!addedMap[p.id]} />
+          <ProductCard key={p.id} p={p} onAdd={onAdd} added={!!addedMap[p.id]} onOpen={onOpen} />
         ))}
       </div>
     </section>
@@ -1001,7 +1008,215 @@ function Footer() {
   );
 }
 
+/* ---------- Product Modal ---------- */
+function ProductModal({ product, onClose, onAdd, addedMap }) {
+  const [qty, setQty] = useState(1);
+  const added = addedMap[product.id];
+  const upsellInfo = UPSELL_MAP[product.id];
+  const upsellProd = upsellInfo ? PRODUCTS.find(p => p.id === upsellInfo.kitId) : null;
+
+  useEffect(() => {
+    const handler = (e) => { if (e.key === "Escape") onClose(); };
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", handler);
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", handler);
+    };
+  }, [onClose]);
+
+  const handleAdd = () => {
+    for (let i = 0; i < qty; i++) onAdd(product);
+    onClose();
+  };
+
+  const handleAddUpsell = () => {
+    onAdd(upsellProd);
+    onClose();
+  };
+
+  return (
+    <>
+      <div className="pm-backdrop" onClick={onClose} />
+      <div className="pm-modal">
+        <div className="pm-box" role="dialog" aria-modal="true">
+          <button className="pm-close" onClick={onClose} aria-label="Fechar"><Icon.X size={18} /></button>
+          <div className="pm-inner">
+            <div className="pm-left">
+              {product.img
+                ? <img src={product.img} alt={product.name} />
+                : <ProductArt kind={product.art} />
+              }
+            </div>
+            <div className="pm-right">
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                {product.tag === "best" && <span className="tag tag-best"><Icon.Fire size={11} /> Mais vendido</span>}
+                {product.tag === "value" && <span className="tag tag-value">Melhor custo-benefício</span>}
+                {product.tag === "frete" && <span className="tag tag-frete"><Icon.Truck size={11} /> Frete grátis</span>}
+              </div>
+              <div>
+                <div className="product-meta" style={{ marginBottom: 8 }}>
+                  <span className="stars">{[1,2,3,4,5].map(i => <Icon.Star key={i} size={12} filled />)}</span>
+                  <span>{product.rating.toFixed(1)} · {product.reviews} avaliações</span>
+                </div>
+                <h2 className="pm-title">{product.name}</h2>
+              </div>
+              <div className="pm-price-block">
+                {product.was && <div className="pm-was">{BRL(product.was)}</div>}
+                <div className="pm-price">{BRL(product.price * qty)}</div>
+                <div className="pm-installment">ou <b>3x de {BRL(product.parcela)}</b> sem juros</div>
+              </div>
+              {product.details && (
+                <p className="pm-desc">{product.details.description}</p>
+              )}
+              {product.details && product.details.benefits && (
+                <ul className="pm-benefits">
+                  {product.details.benefits.map((b, i) => (
+                    <li key={i}><Icon.Check size={14} /> {b}</li>
+                  ))}
+                </ul>
+              )}
+              {product.details && product.details.howToUse && (
+                <div>
+                  <span className="pm-how-label">Como usar</span>
+                  <p className="pm-how-text">{product.details.howToUse}</p>
+                </div>
+              )}
+              <div className="pm-qty-row">
+                <div className="pm-qty">
+                  <button onClick={() => setQty(q => Math.max(1, q - 1))}><Icon.Minus size={14} /></button>
+                  <span>{qty}</span>
+                  <button onClick={() => setQty(q => q + 1)}><Icon.Plus size={14} /></button>
+                </div>
+                <button className={"pm-add " + (added ? "added" : "")} onClick={handleAdd}>
+                  {added
+                    ? <><Icon.Check size={16} /> Adicionado</>
+                    : <><Icon.Bag size={16} /> Adicionar ao carrinho</>
+                  }
+                </button>
+              </div>
+              {product.details && product.details.composition && (
+                <p className="pm-composition">{product.details.composition}</p>
+              )}
+              {upsellProd && upsellInfo && (
+                <div className="pm-upsell">
+                  <div className="pm-upsell-top">
+                    <span className="pm-upsell-badge">🔥 Oferta especial</span>
+                    <div>
+                      <h4>{upsellInfo.headline}</h4>
+                      <p>{upsellInfo.sub}</p>
+                    </div>
+                  </div>
+                  <div className="pm-upsell-bottom">
+                    <div className="pm-upsell-price">
+                      {BRL(upsellProd.price)}
+                      <small>3x de {BRL(upsellProd.parcela)} sem juros</small>
+                    </div>
+                    <button className="pm-upsell-btn" onClick={handleAddUpsell}>
+                      Quero o kit <Icon.ArrowRight size={14} />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+/* ---------- WhatsApp Lead Popup ---------- */
+function WhatsAppPopup({ onClose }) {
+  const [phone, setPhone] = useState("");
+  const [sent, setSent] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = ""; };
+  }, []);
+
+  const formatPhone = (v) => {
+    const d = v.replace(/\D/g, "").slice(0, 11);
+    if (d.length <= 2) return d;
+    if (d.length <= 7) return `(${d.slice(0,2)}) ${d.slice(2)}`;
+    return `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`;
+  };
+
+  const handleSubmit = () => {
+    const digits = phone.replace(/\D/g, "");
+    if (digits.length < 10) { setError("Informe um número válido com DDD."); return; }
+
+    const leads = JSON.parse(localStorage.getItem("amazo_leads") || "[]");
+    leads.unshift({
+      id: Date.now(),
+      phone: digits,
+      coupon: COUPON.code,
+      date: new Date().toISOString(),
+      source: "popup",
+    });
+    localStorage.setItem("amazo_leads", JSON.stringify(leads));
+    localStorage.setItem("amazo_popup_shown", "1");
+    setSent(true);
+
+    const msg = encodeURIComponent(`Olá Amazon BSB! Quero usar meu cupom de desconto: ${COUPON.code}`);
+    setTimeout(() => window.open(`https://wa.me/5561999545567?text=${msg}`, "_blank"), 1800);
+  };
+
+  if (sent) {
+    return (
+      <>
+        <div className="wa-backdrop" onClick={onClose} />
+        <div className="wa-wrap">
+          <div className="wa-popup">
+            <button className="wa-popup-close" onClick={onClose}><Icon.X size={16} /></button>
+            <div className="wa-success-icon"><Icon.Check size={32} /></div>
+            <h3>Cupom enviado!</h3>
+            <p className="wa-sub">Guarde seu código exclusivo:</p>
+            <div className="wa-coupon">
+              <span className="wa-coupon-code">{COUPON.code}</span>
+            </div>
+            <p style={{ fontSize: 13, color: "var(--muted)", margin: "0 0 20px 0", lineHeight: 1.5 }}>
+              {COUPON.discount}% OFF na sua primeira compra.<br />Abrindo WhatsApp em instantes…
+            </p>
+            <button className="wa-btn" onClick={onClose}><Icon.Check size={16} /> Fechar</button>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <div className="wa-backdrop" onClick={onClose} />
+      <div className="wa-wrap">
+        <div className="wa-popup">
+          <button className="wa-popup-close" onClick={onClose}><Icon.X size={16} /></button>
+          <div className="wa-icon"><Icon.WhatsApp size={32} /></div>
+          <h3>Ganhe {COUPON.discount}% OFF<br />no 1º pedido</h3>
+          <p className="wa-sub">Informe seu WhatsApp e receba um cupom exclusivo agora mesmo.</p>
+          <input
+            type="tel"
+            placeholder="(61) 99999-9999"
+            value={phone}
+            onChange={e => { setPhone(formatPhone(e.target.value)); setError(""); }}
+            onKeyDown={e => e.key === "Enter" && handleSubmit()}
+            autoFocus
+          />
+          {error && <span className="wa-error">{error}</span>}
+          <button className="wa-btn" onClick={handleSubmit}>
+            <Icon.WhatsApp size={18} /> Quero meu cupom
+          </button>
+          <button className="wa-skip" onClick={onClose}>Continuar sem desconto</button>
+        </div>
+      </div>
+    </>
+  );
+}
+
 Object.assign(window, {
   ProductArt, UrgencyBar, Header, Hero, Credibility, Why, ProductCard, Products,
-  Benefits, HowToUse, Testimonials, Kits, Guarantee, FAQ, WhatsAppFloat, Footer
+  Benefits, HowToUse, Testimonials, Kits, Guarantee, FAQ, WhatsAppFloat, Footer,
+  ProductModal, WhatsAppPopup,
 });

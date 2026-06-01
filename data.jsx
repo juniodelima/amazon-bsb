@@ -14,6 +14,19 @@ const PRODUCTS = [
     img: "assets/product-gotas-50ml.png",
     rating: 4.9,
     reviews: 312,
+    details: {
+      description: "Extraído a frio da banha do avestruz criado em liberdade no coração do Brasil, nosso Óleo em Gotas é a versão mais versátil da linha Amazon BSB. Rico em Ômegas 3, 6, 7 e 9 e em Vitaminas A e E — nutrientes raros de encontrar juntos em uma única fonte natural. Sabor suave, absorção rápida.",
+      benefits: [
+        "Fonte completa de Ômegas 3, 6, 7 e 9",
+        "Rico em Vitaminas A e E antioxidantes",
+        "Uso culinário: saladas, sucos e pratos prontos",
+        "Absorção rápida pelo organismo",
+        "100% natural, sem glúten e sem aditivos",
+      ],
+      howToUse: "5 a 10 gotas ao dia, diretamente ou misturadas em sucos, saladas e pratos prontos. Para melhores resultados, mantenha o uso contínuo por pelo menos 60 dias.",
+      composition: "Óleo de avestruz (Struthio camelus). Não contém glúten. Conservar em local fresco e seco ao abrigo da luz.",
+      volume: "50ml",
+    },
   },
   {
     id: "caps-60",
@@ -26,6 +39,19 @@ const PRODUCTS = [
     img: "assets/product-caps-60.png",
     rating: 4.8,
     reviews: 478,
+    details: {
+      description: "Praticidade e precisão de dose na mesma cápsula. Cada unidade contém 500mg de Óleo de Avestruz puro — sem sabor, sem odor, fácil de engolir. Ideal para quem quer começar a suplementar com segurança e consistência, com duração de 30 a 60 dias.",
+      benefits: [
+        "500mg de óleo puro por cápsula",
+        "Dosagem padronizada e fácil de controlar",
+        "Sem sabor — perfeito para quem não aprecia o sabor do óleo",
+        "30 a 60 dias de uso por frasco",
+        "Ômegas 3, 6, 7 e 9 + Vitaminas A e E",
+      ],
+      howToUse: "1 a 2 cápsulas ao dia, preferencialmente com as refeições. Para melhores resultados, mantenha o uso por pelo menos 60 dias.",
+      composition: "Óleo de avestruz (Struthio camelus), gelatina bovina, glicerina. Não contém glúten.",
+      volume: "60 cápsulas · 500mg por cápsula",
+    },
   },
   {
     id: "caps-90",
@@ -39,6 +65,19 @@ const PRODUCTS = [
     rating: 4.9,
     reviews: 612,
     tag: "frete",
+    details: {
+      description: "Para quem já conhece os benefícios e quer continuidade. Com 90 cápsulas por frasco, você tem de 45 a 90 dias de uso — suficiente para sentir os resultados de forma consistente. Frete grátis incluso e custo por cápsula menor que o frasco de 60.",
+      benefits: [
+        "90 cápsulas · 45 a 90 dias de uso",
+        "Frete grátis em todo o Brasil",
+        "Custo por cápsula menor que o frasco de 60un",
+        "500mg de óleo puro por cápsula",
+        "Ômegas 3, 6, 7 e 9 + Vitaminas A e E",
+      ],
+      howToUse: "1 a 2 cápsulas ao dia, preferencialmente com as refeições.",
+      composition: "Óleo de avestruz (Struthio camelus), gelatina bovina, glicerina. Não contém glúten.",
+      volume: "90 cápsulas · 500mg por cápsula",
+    },
   },
   {
     id: "kit3-gotas",
@@ -53,6 +92,19 @@ const PRODUCTS = [
     rating: 5.0,
     reviews: 188,
     tag: "frete",
+    details: {
+      description: "Três frascos de Óleo de Avestruz em Gotas para 3 meses de uso contínuo. O tempo ideal para sentir os resultados plenos — e ainda sair na frente com frete grátis e economia garantida.",
+      benefits: [
+        "3 frascos de 50ml",
+        "3 meses de suplementação contínua",
+        "Frete grátis em todo o Brasil",
+        "Economize R$ 7,80 vs. compras avulsas",
+        "Uso culinário e direto",
+      ],
+      howToUse: "5 a 10 gotas ao dia, diretamente ou misturadas em alimentos.",
+      composition: "3× Óleo de avestruz (Struthio camelus). Não contém glúten.",
+      volume: "3 × 50ml",
+    },
   },
   {
     id: "kit3-caps60",
@@ -67,6 +119,19 @@ const PRODUCTS = [
     rating: 4.9,
     reviews: 244,
     tag: "frete",
+    details: {
+      description: "Três frascos de 60 cápsulas para 90 dias de uso contínuo — o tempo ideal para sentir os resultados plenos do Óleo de Avestruz. Frete grátis incluso.",
+      benefits: [
+        "3 frascos de 60 cápsulas cada",
+        "90 dias de suplementação contínua",
+        "Frete grátis em todo o Brasil",
+        "Economize R$ 7,80 vs. unidades avulsas",
+        "500mg de óleo puro por cápsula",
+      ],
+      howToUse: "1 a 2 cápsulas ao dia, preferencialmente com as refeições.",
+      composition: "3× Óleo de avestruz, gelatina bovina, glicerina. Não contém glúten.",
+      volume: "3 × 60 cápsulas",
+    },
   },
   {
     id: "kit3-caps90",
@@ -81,6 +146,19 @@ const PRODUCTS = [
     rating: 4.9,
     reviews: 521,
     tag: "best",
+    details: {
+      description: "O kit mais pedido pelos nossos clientes. Três frascos de 90 cápsulas garantem 135 dias de uso contínuo — com brinde surpresa e frete grátis para todo o Brasil.",
+      benefits: [
+        "3 frascos de 90 cápsulas cada",
+        "135 dias de suplementação contínua",
+        "Frete grátis + brinde surpresa",
+        "Economize R$ 9,80 vs. unidades avulsas",
+        "500mg de óleo puro por cápsula",
+      ],
+      howToUse: "1 a 2 cápsulas ao dia, preferencialmente com as refeições.",
+      composition: "3× Óleo de avestruz, gelatina bovina, glicerina. Não contém glúten.",
+      volume: "3 × 90 cápsulas",
+    },
   },
   {
     id: "kit5-caps60",
@@ -95,6 +173,19 @@ const PRODUCTS = [
     rating: 4.9,
     reviews: 162,
     tag: "value",
+    details: {
+      description: "Cinco frascos para você, sua família e quem você ama. 150 dias de uso com o maior desconto da linha — ideal para quem já usa e quer garantir o estoque.",
+      benefits: [
+        "5 frascos de 60 cápsulas cada",
+        "150 dias de suplementação contínua",
+        "Frete grátis em todo o Brasil",
+        "Economize R$ 19,60 vs. unidades avulsas",
+        "Ideal para toda a família",
+      ],
+      howToUse: "1 a 2 cápsulas ao dia, preferencialmente com as refeições.",
+      composition: "5× Óleo de avestruz, gelatina bovina, glicerina. Não contém glúten.",
+      volume: "5 × 60 cápsulas",
+    },
   },
   {
     id: "kit5-gotas",
@@ -109,6 +200,19 @@ const PRODUCTS = [
     rating: 4.8,
     reviews: 98,
     tag: "value",
+    details: {
+      description: "Cinco frascos de gotas para uso contínuo e culinário. O kit mais econômico da linha para quem prefere a versão líquida e quer garantir o estoque por meses.",
+      benefits: [
+        "5 frascos de 50ml",
+        "5 meses de suplementação contínua",
+        "Frete grátis em todo o Brasil",
+        "Economize R$ 19,60 vs. compras avulsas",
+        "Versátil: culinário e uso direto",
+      ],
+      howToUse: "5 a 10 gotas ao dia, diretamente ou misturadas em alimentos.",
+      composition: "5× Óleo de avestruz (Struthio camelus). Não contém glúten.",
+      volume: "5 × 50ml",
+    },
   },
   {
     id: "kit5-caps90",
@@ -123,8 +227,44 @@ const PRODUCTS = [
     rating: 5.0,
     reviews: 134,
     tag: "value",
+    details: {
+      description: "O maior kit da linha Amazon BSB — 225 dias de uso contínuo com o melhor preço por cápsula. Para quem levou a sério e quer garantir resultados duradouros.",
+      benefits: [
+        "5 frascos de 90 cápsulas cada",
+        "225 dias de suplementação contínua",
+        "Frete grátis em todo o Brasil",
+        "Economize R$ 49,60 vs. unidades avulsas",
+        "Melhor custo por cápsula da linha",
+      ],
+      howToUse: "1 a 2 cápsulas ao dia, preferencialmente com as refeições.",
+      composition: "5× Óleo de avestruz, gelatina bovina, glicerina. Não contém glúten.",
+      volume: "5 × 90 cápsulas",
+    },
   },
 ];
+
+const UPSELL_MAP = {
+  "gotas-50ml": {
+    kitId: "kit3-gotas",
+    savings: 7.80,
+    headline: "Leve o Kit 3x e ganhe frete grátis!",
+    sub: "3 meses de uso contínuo. Economize R$ 7,80 e receba sem frete.",
+  },
+  "caps-60": {
+    kitId: "kit3-caps60",
+    savings: 7.80,
+    headline: "Upgrade para o Kit 3x e economize!",
+    sub: "90 dias de uso com frete grátis incluso. Ideal para sentir resultados.",
+  },
+  "caps-90": {
+    kitId: "kit3-caps90",
+    savings: 9.80,
+    headline: "O kit mais pedido pelos nossos clientes.",
+    sub: "135 dias + brinde surpresa + frete grátis. Economize R$ 9,80.",
+  },
+};
+
+const COUPON = { code: "PRIMEIRACOMPRA10", discount: 10 };
 
 const FAQS = [
   {
@@ -192,3 +332,5 @@ window.PRODUCTS = PRODUCTS;
 window.FAQS = FAQS;
 window.TESTIMONIALS = TESTIMONIALS;
 window.BRL = BRL;
+window.UPSELL_MAP = UPSELL_MAP;
+window.COUPON = COUPON;

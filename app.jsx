@@ -17,7 +17,7 @@ const ACCENT_THEMES = {
 };
 
 /* ---------- Cart drawer ---------- */
-function CartDrawer({ open, items, setItems, onClose }) {
+function CartDrawer({ open, items, setItems, onClose, onCheckout }) {
   const total = items.reduce((s, it) => s + it.price * it.qty, 0);
   const fretGoal = 150;
   const fretProgress = Math.min(100, (total / fretGoal) * 100);
@@ -78,7 +78,7 @@ function CartDrawer({ open, items, setItems, onClose }) {
               <small>Total · {items.reduce((s, i) => s + i.qty, 0)} itens</small>
               <b>{BRL(total)}</b>
             </div>
-            <button className="btn btn-dark">Finalizar compra <Icon.ArrowRight size={16} /></button>
+            <button className="btn btn-dark" onClick={onCheckout}>Finalizar compra <Icon.ArrowRight size={16} /></button>
           </div>
         )}
       </aside>
@@ -142,12 +142,21 @@ function App() {
   const [cartOpen, setCartOpen] = useState(false);
   const [recentlyAdded, setRecentlyAdded] = useState({});
   const [tweakState, setTweakState] = useState(() => window.__tweaks || TWEAK_DEFAULTS);
+  const [modalProduct, setModalProduct] = useState(null);
+  const [waPopup, setWaPopup] = useState(false);
 
   // sync with tweaks
   useEffect(() => {
     const handler = () => setTweakState({ ...window.__tweaks });
     window.addEventListener("tweaks-changed", handler);
     return () => window.removeEventListener("tweaks-changed", handler);
+  }, []);
+
+  // show WA popup after 12s (once per session)
+  useEffect(() => {
+    if (localStorage.getItem("amazo_popup_shown")) return;
+    const t = setTimeout(() => setWaPopup(true), 12000);
+    return () => clearTimeout(t);
   }, []);
 
   const addToCart = useCallback((p) => {
@@ -160,9 +169,24 @@ function App() {
     setTimeout(() => {
       setRecentlyAdded(prev => { const n = { ...prev }; delete n[p.id]; return n; });
     }, 2000);
-    // gently nudge cart open after 600ms
     setTimeout(() => setCartOpen(true), 350);
   }, []);
+
+  const checkout = useCallback(() => {
+    const orders = JSON.parse(localStorage.getItem("amazo_orders") || "[]");
+    orders.unshift({
+      id: "PED-" + Date.now(),
+      date: new Date().toISOString(),
+      items: items.map(i => ({ id: i.id, name: i.name, qty: i.qty, price: i.price, img: i.img || null })),
+      total: items.reduce((s, i) => s + i.price * i.qty, 0),
+      status: "pendente",
+      customer: { name: "", phone: "", email: "" },
+    });
+    localStorage.setItem("amazo_orders", JSON.stringify(orders));
+    setItems([]);
+    setCartOpen(false);
+    alert("✅ Pedido registrado! Nossa equipe entrará em contato pelo WhatsApp para confirmar e combinar o pagamento.");
+  }, [items]);
 
   const cartCount = items.reduce((s, i) => s + i.qty, 0);
 
@@ -173,7 +197,7 @@ function App() {
       <Hero autoplay={tweakState.heroAutoplay} viewMode={tweakState.viewMode} />
       <Credibility />
       <Why />
-      <Products onAdd={addToCart} addedMap={recentlyAdded} />
+      <Products onAdd={addToCart} addedMap={recentlyAdded} onOpen={setModalProduct} />
       <BenefitsShowcase />
       <Benefits />
       <HowToUse />
@@ -184,7 +208,22 @@ function App() {
       <FAQ />
       <Footer />
       <WhatsAppFloat />
-      <CartDrawer open={cartOpen} items={items} setItems={setItems} onClose={() => setCartOpen(false)} />
+      <CartDrawer
+        open={cartOpen}
+        items={items}
+        setItems={setItems}
+        onClose={() => setCartOpen(false)}
+        onCheckout={checkout}
+      />
+      {modalProduct && (
+        <ProductModal
+          product={modalProduct}
+          onClose={() => setModalProduct(null)}
+          onAdd={addToCart}
+          addedMap={recentlyAdded}
+        />
+      )}
+      {waPopup && <WhatsAppPopup onClose={() => setWaPopup(false)} />}
     </div>
   );
 }
