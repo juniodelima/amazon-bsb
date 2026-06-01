@@ -34,6 +34,60 @@ function Progress() {
   );
 }
 
+/* ---- Checkout upsell: shown when total < R$150 ---- */
+function CheckoutUpsell({ cart, setCart }) {
+  // Find first single item that has a kit upsell
+  const singleItem = cart.find(i => UPSELL_MAP && UPSELL_MAP[i.id]);
+  if (!singleItem) return null;
+
+  const info = UPSELL_MAP[singleItem.id];
+  const kit = PRODUCTS && PRODUCTS.find(p => p.id === info.kitId);
+  if (!kit) return null;
+
+  // Don't show if kit already in cart
+  if (cart.some(i => i.id === info.kitId)) return null;
+
+  const mkCartItem = (p) => ({ id: p.id, name: p.name, price: p.price, parcela: p.parcela, qty: 1, img: p.img || null });
+
+  const handleAdd = () => {
+    const updated = [...cart, mkCartItem(kit)];
+    setCart(updated);
+    saveCart(updated);
+  };
+
+  const handleSwap = () => {
+    // Replace the single item with the kit, keep other items
+    const updated = cart.filter(i => i.id !== singleItem.id).concat([mkCartItem(kit)]);
+    setCart(updated);
+    saveCart(updated);
+  };
+
+  return (
+    <div className="co-upsell">
+      <div className="co-upsell-head">
+        🚚 Ganhe frete grátis! Veja a oferta:
+      </div>
+      <div className="co-upsell-body">
+        <div className="co-upsell-img">
+          {kit.img && <img src={kit.img} alt={kit.name} />}
+        </div>
+        <div className="co-upsell-info">
+          <div className="co-upsell-name">{kit.name}</div>
+          <div className="co-upsell-sub">
+            🎁 Economize R$ {info.savings.toFixed(2).replace(".", ",")} + frete grátis incluso
+          </div>
+          <div className="co-upsell-price">{BRL(kit.price)}</div>
+          <div className="co-upsell-parcela">3x de {BRL(kit.parcela)} s/juros</div>
+        </div>
+        <div className="co-upsell-btns">
+          <button className="co-upsell-add" onClick={handleAdd}>+ Adicionar</button>
+          <button className="co-upsell-swap" onClick={handleSwap}>Trocar pelo kit</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function CheckoutPage() {
   const [cart, setCart] = useState(getCart);
   const [phone, setPhone]     = useState("");
@@ -203,6 +257,7 @@ function CheckoutPage() {
               <div style={{ marginTop:16, padding:"12px 14px", background: freteFree ? "#e8edd4" : "#fef3c7", borderRadius:10, fontSize:13, fontWeight:600, color: freteFree ? "#3d4a2a" : "#92400e" }}>
                 {freteFree ? "🚚 Frete grátis incluso!" : `Falta ${BRL(150 - total)} para frete grátis 🚚`}
               </div>
+              {!freteFree && <CheckoutUpsell cart={cart} setCart={setCart} />}
               <div className="total-row">
                 <span style={{ fontSize:14, color:"#6b6f56" }}>Total</span>
                 <b>{BRL(total)}</b>
