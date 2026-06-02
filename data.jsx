@@ -5,7 +5,7 @@ const BRL = (n) => "R$ " + n.toFixed(2).replace(".", ",");
 const PRODUCTS = [
   {
     id: "gotas-50ml",
-    name: "Óleo de Avestruz — Gotas 50ml",
+    name: "Óleo de Avestruz  Gotas 50ml",
     short: "Uso direto, culinário e em saladas",
     type: "Gotas",
     price: 75.90,
@@ -15,7 +15,7 @@ const PRODUCTS = [
     rating: 4.9,
     reviews: 312,
     details: {
-      description: "Extraído a frio da banha do avestruz criado em liberdade no coração do Brasil, nosso Óleo em Gotas é a versão mais versátil da linha Amazon BSB. Rico em Ômegas 3, 6, 7 e 9 e em Vitaminas A e E — nutrientes raros de encontrar juntos em uma única fonte natural. Sabor suave, absorção rápida.",
+      description: "Extraído a frio da banha do avestruz criado em liberdade no coração do Brasil, nosso Óleo em Gotas é a versão mais versátil da linha Amazon BSB. Rico em Ômegas 3, 6, 7 e 9 e em Vitaminas A e E  nutrientes raros de encontrar juntos em uma única fonte natural. Sabor suave, absorção rápida.",
       benefits: [
         "Fonte completa de Ômegas 3, 6, 7 e 9",
         "Rico em Vitaminas A e E antioxidantes",
@@ -30,7 +30,7 @@ const PRODUCTS = [
   },
   {
     id: "caps-60",
-    name: "Óleo de Avestruz — 60 Cápsulas",
+    name: "Óleo de Avestruz  60 Cápsulas",
     short: "500mg por cápsula • 30 dias de uso",
     type: "Cápsulas",
     price: 75.90,
@@ -40,11 +40,11 @@ const PRODUCTS = [
     rating: 4.8,
     reviews: 478,
     details: {
-      description: "Praticidade e precisão de dose na mesma cápsula. Cada unidade contém 500mg de Óleo de Avestruz puro — sem sabor, sem odor, fácil de engolir. Ideal para quem quer começar a suplementar com segurança e consistência, com duração de 30 a 60 dias.",
+      description: "Praticidade e precisão de dose na mesma cápsula. Cada unidade contém 500mg de Óleo de Avestruz puro  sem sabor, sem odor, fácil de engolir. Ideal para quem quer começar a suplementar com segurança e consistência, com duração de 30 a 60 dias.",
       benefits: [
         "500mg de óleo puro por cápsula",
         "Dosagem padronizada e fácil de controlar",
-        "Sem sabor — perfeito para quem não aprecia o sabor do óleo",
+        "Sem sabor  perfeito para quem não aprecia o sabor do óleo",
         "30 a 60 dias de uso por frasco",
         "Ômegas 3, 6, 7 e 9 + Vitaminas A e E",
       ],
@@ -55,7 +55,7 @@ const PRODUCTS = [
   },
   {
     id: "caps-90",
-    name: "Óleo de Avestruz — 90 Cápsulas",
+    name: "Óleo de Avestruz  90 Cápsulas",
     short: "500mg por cápsula • 45 dias de uso",
     type: "Cápsulas",
     price: 94.90,
@@ -66,7 +66,7 @@ const PRODUCTS = [
     reviews: 612,
     tag: "frete",
     details: {
-      description: "Para quem já conhece os benefícios e quer continuidade. Com 90 cápsulas por frasco, você tem de 45 a 90 dias de uso — suficiente para sentir os resultados de forma consistente. Frete grátis incluso e custo por cápsula menor que o frasco de 60.",
+      description: "Para quem já conhece os benefícios e quer continuidade. Com 90 cápsulas por frasco, você tem de 45 a 90 dias de uso  suficiente para sentir os resultados de forma consistente. Frete grátis incluso e custo por cápsula menor que o frasco de 60.",
       benefits: [
         "90 cápsulas · 45 a 90 dias de uso",
         "Frete grátis em todo o Brasil",
@@ -93,7 +93,7 @@ const PRODUCTS = [
     reviews: 188,
     tag: "frete",
     details: {
-      description: "Três frascos de Óleo de Avestruz em Gotas para 3 meses de uso contínuo. O tempo ideal para sentir os resultados plenos — e ainda sair na frente com frete grátis e economia garantida.",
+      description: "Três frascos de Óleo de Avestruz em Gotas para 3 meses de uso contínuo. O tempo ideal para sentir os resultados plenos  e ainda sair na frente com frete grátis e economia garantida.",
       benefits: [
         "3 frascos de 50ml",
         "3 meses de suplementação contínua",
@@ -120,7 +120,7 @@ const PRODUCTS = [
     reviews: 244,
     tag: "frete",
     details: {
-      description: "Três frascos de 60 cápsulas para 90 dias de uso contínuo — o tempo ideal para sentir os resultados plenos do Óleo de Avestruz. Frete grátis incluso.",
+      description: "Três frascos de 60 cápsulas para 90 dias de uso contínuo  o tempo ideal para sentir os resultados plenos do Óleo de Avestruz. Frete grátis incluso.",
       benefits: [
         "3 frascos de 60 cápsulas cada",
         "90 dias de suplementação contínua",
@@ -147,7 +147,7 @@ const PRODUCTS = [
     reviews: 521,
     tag: "best",
     details: {
-      description: "O kit mais pedido pelos nossos clientes. Três frascos de 90 cápsulas garantem 135 dias de uso contínuo — com brinde surpresa e frete grátis para todo o Brasil.",
+      description: "O kit mais pedido pelos nossos clientes. Três frascos de 90 cápsulas garantem 135 dias de uso contínuo  com brinde surpresa e frete grátis para todo o Brasil.",
       benefits: [
         "3 frascos de 90 cápsulas cada",
         "135 dias de suplementação contínua",
@@ -174,7 +174,7 @@ const PRODUCTS = [
     reviews: 162,
     tag: "value",
     details: {
-      description: "Cinco frascos para você, sua família e quem você ama. 150 dias de uso com o maior desconto da linha — ideal para quem já usa e quer garantir o estoque.",
+      description: "Cinco frascos para você, sua família e quem você ama. 150 dias de uso com o maior desconto da linha  ideal para quem já usa e quer garantir o estoque.",
       benefits: [
         "5 frascos de 60 cápsulas cada",
         "150 dias de suplementação contínua",
@@ -228,7 +228,7 @@ const PRODUCTS = [
     reviews: 134,
     tag: "value",
     details: {
-      description: "O maior kit da linha Amazon BSB — 225 dias de uso contínuo com o melhor preço por cápsula. Para quem levou a sério e quer garantir resultados duradouros.",
+      description: "O maior kit da linha Amazon BSB  225 dias de uso contínuo com o melhor preço por cápsula. Para quem levou a sério e quer garantir resultados duradouros.",
       benefits: [
         "5 frascos de 90 cápsulas cada",
         "225 dias de suplementação contínua",
@@ -269,7 +269,7 @@ const COUPON = { code: "PRIMEIRACOMPRA10", discount: 10 };
 const FAQS = [
   {
     q: "Qual a diferença entre as gotas e as cápsulas?",
-    a: "As gotas são líquidas e podem ser usadas diretamente, em saladas, sucos ou pratos prontos — perfeitas para quem gosta de incorporar ao dia a dia culinário. As cápsulas (500mg) são práticas para tomar como suplemento, ideais para quem busca rapidez e dosagem padronizada.",
+    a: "As gotas são líquidas e podem ser usadas diretamente, em saladas, sucos ou pratos prontos  perfeitas para quem gosta de incorporar ao dia a dia culinário. As cápsulas (500mg) são práticas para tomar como suplemento, ideais para quem busca rapidez e dosagem padronizada.",
   },
   {
     q: "Como devo tomar o Óleo de Avestruz?",
@@ -281,11 +281,11 @@ const FAQS = [
   },
   {
     q: "Qual produto é mais indicado para começar?",
-    a: "Para quem está começando, recomendamos as cápsulas de 60 unidades — duram cerca de 30 a 60 dias e permitem sentir os efeitos com investimento menor. Quem busca economia, o Kit 3x 90 cápsulas é o mais pedido pelos nossos clientes.",
+    a: "Para quem está começando, recomendamos as cápsulas de 60 unidades  duram cerca de 30 a 60 dias e permitem sentir os efeitos com investimento menor. Quem busca economia, o Kit 3x 90 cápsulas é o mais pedido pelos nossos clientes.",
   },
   {
     q: "Qual o prazo de entrega?",
-    a: "Enviamos em até 1 dia útil após a confirmação do pagamento. O prazo médio de entrega é de 3 a 7 dias úteis para a maioria das capitais e de 5 a 12 dias úteis para o interior — entregamos em todo o Brasil.",
+    a: "Enviamos em até 1 dia útil após a confirmação do pagamento. O prazo médio de entrega é de 3 a 7 dias úteis para a maioria das capitais e de 5 a 12 dias úteis para o interior  entregamos em todo o Brasil.",
   },
   {
     q: "Como funciona o frete grátis?",
@@ -316,7 +316,7 @@ const TESTIMONIALS = [
     initials: "CR",
     cls: "a2",
     rating: 5,
-    text: "Comprei o kit 3x para mim e para minha esposa. A pele dela melhorou muito — está acompanhando os Ômegas com o nutricionista.",
+    text: "Comprei o kit 3x para mim e para minha esposa. A pele dela melhorou muito  está acompanhando os Ômegas com o nutricionista.",
   },
   {
     name: "Patrícia Lima",

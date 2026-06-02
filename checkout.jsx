@@ -1,4 +1,4 @@
-/* checkout.jsx — Dados do cliente + rastreio de abandono */
+/* checkout.jsx  Dados do cliente + rastreio de abandono */
 const { useState, useEffect } = React;
 
 const BRL = window.BRL || ((n) => "R$ " + Number(n).toFixed(2).replace(".", ","));

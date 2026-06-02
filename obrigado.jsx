@@ -1,4 +1,4 @@
-/* obrigado.jsx — Página de confirmação do pedido */
+/* obrigado.jsx  Página de confirmação do pedido */
 const BRL = (n) => "R$ " + Number(n).toFixed(2).replace(".", ",");
 const fmtPhone = (v) => {
   const d = String(v || "").replace(/\D/g,"").slice(0,11);

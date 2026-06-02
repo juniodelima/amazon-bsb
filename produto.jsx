@@ -1,4 +1,4 @@
-/* Página de produto — produto.html?id=caps-60 */
+/* Página de produto  produto.html?id=caps-60 */
 const { useState, useEffect } = React;
 
 const getCart = () => { try { return JSON.parse(localStorage.getItem("amazo_cart") || "[]"); } catch { return []; } };
@@ -53,7 +53,7 @@ function ProductPage() {
 
   // Update page title
   useEffect(() => {
-    if (product) document.title = product.name + " — Amazon BSB";
+    if (product) document.title = product.name + "  Amazon BSB";
   }, [product]);
 
   if (!product) {
@@ -208,7 +208,7 @@ function ProductPage() {
 
       <footer className="pf">
         <div className="pf-inner">
-          <span>© 2025 Amazon BSB — Todos os direitos reservados</span>
+          <span>© 2025 Amazon BSB  Todos os direitos reservados</span>
           <a href="index.html">← Voltar à loja</a>
         </div>
       </footer>

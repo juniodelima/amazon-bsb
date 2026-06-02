@@ -4,7 +4,7 @@ const { useState, useEffect, useRef, useCallback } = React;
 
 /* ---------- Bottle / Capsule placeholder art ---------- */
 function ProductArt({ kind }) {
-  // Stylized bottle / capsule silhouette — placeholder for real product photography
+  // Stylized bottle / capsule silhouette  placeholder for real product photography
   if (kind === "drop") {
     return (
       <svg className="product-art" viewBox="0 0 160 240" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -216,7 +216,7 @@ function Hero({ autoplay = true, viewMode = "desktop" }) {
           <div key={i} className="hero-slide">
             {s.kind === "photo" && (
               <div className="hero-image-wrap desktop-only">
-                <img src={s.img} alt="Óleo de Avestruz Natural — Amazon BSB" />
+                <img src={s.img} alt="Óleo de Avestruz Natural  Amazon BSB" />
                 {s.actions && (
                   <div className="desktop-hero-copy">
                     <span className="desktop-hero-kicker">Amazon BSB</span>
@@ -287,7 +287,7 @@ function Why() {
     {
       icon: <Icon.Flask size={28} />,
       title: "Ômegas completos",
-      text: "Ômegas 3, 6, 7 e 9 em uma única fonte natural — algo raro em suplementos. Suporte direto à saúde cardiovascular e cerebral.",
+      text: "Ômegas 3, 6, 7 e 9 em uma única fonte natural  algo raro em suplementos. Suporte direto à saúde cardiovascular e cerebral.",
       num: "01",
     },
     {
@@ -299,7 +299,7 @@ function Why() {
     {
       icon: <Icon.Shield size={28} />,
       title: "Pureza Amazônica",
-      text: "Extraído da banha do avestruz com processo rigoroso de qualidade. Sem glúten, sem aditivos artificiais — 100% natural.",
+      text: "Extraído da banha do avestruz com processo rigoroso de qualidade. Sem glúten, sem aditivos artificiais  100% natural.",
       num: "03",
     },
   ];
@@ -308,7 +308,7 @@ function Why() {
       <div className="section-head">
         <span className="section-kicker">Por que o Óleo de Avestruz?</span>
         <h2 className="section-title">O suplemento natural que <em>seu corpo</em> estava esperando.</h2>
-        <p className="section-sub">Uma fonte rara, completa e familiar de Ômegas e vitaminas — pensada para quem busca vitalidade com origem confiável.</p>
+        <p className="section-sub">Uma fonte rara, completa e familiar de Ômegas e vitaminas  pensada para quem busca vitalidade com origem confiável.</p>
       </div>
       <div className="why-grid">
         {cards.map((c, i) => (
@@ -413,7 +413,7 @@ function Benefits() {
     { h: "Pele mais saudável", t: "Vitaminas A e E que cuidam por dentro e por fora." },
     { h: "Para toda a família", t: "Suplemento natural seguro e bem tolerado." },
     { h: "Sem glúten", t: "Adequado para celíacos e sensíveis ao glúten." },
-    { h: "Cápsulas ou gotas", t: "Versátil — escolha o que combina com você." },
+    { h: "Cápsulas ou gotas", t: "Versátil  escolha o que combina com você." },
   ];
   return (
     <section className="benefits section">
@@ -421,7 +421,7 @@ function Benefits() {
         <div>
           <span className="section-kicker">Para a sua saúde</span>
           <h2 className="section-title" style={{ marginTop: 12 }}>Cuide do que <em>importa</em>: você e quem você ama.</h2>
-          <p className="section-sub" style={{ marginTop: 16 }}>Um suplemento natural pensado para a rotina real — sem promessas vazias, com a riqueza dos Ômegas 3, 6, 7 e 9 e o cuidado de quem entende de pureza amazônica.</p>
+          <p className="section-sub" style={{ marginTop: 16 }}>Um suplemento natural pensado para a rotina real  sem promessas vazias, com a riqueza dos Ômegas 3, 6, 7 e 9 e o cuidado de quem entende de pureza amazônica.</p>
           <div className="benefits-list">
             {list.map((b, i) => (
               <div key={i} className="benefit-item">
@@ -456,7 +456,7 @@ function Benefits() {
 function HowToUse() {
   const steps = [
     { n: "Passo 01", icon: <Icon.Drop size={26} />, h: "Escolha seu formato", t: "Cápsulas para praticidade ou gotas para uso direto, em saladas e pratos do dia a dia." },
-    { n: "Passo 02", icon: <Icon.Pill size={26} />, h: "Use diariamente", t: "Siga a indicação do rótulo — em torno de 1 a 2 cápsulas ou 5 a 10 gotas por dia, com refeições." },
+    { n: "Passo 02", icon: <Icon.Pill size={26} />, h: "Use diariamente", t: "Siga a indicação do rótulo  em torno de 1 a 2 cápsulas ou 5 a 10 gotas por dia, com refeições." },
     { n: "Passo 03", icon: <Icon.Leaf size={26} />, h: "Sinta a diferença", t: "Mantenha o uso contínuo por pelo menos 60 dias para sentir resultados consistentes." },
   ];
   return (
@@ -554,7 +554,7 @@ function Kits({ onAdd, addedMap }) {
       <div className="section-head">
         <span className="section-kicker">Compre em kit</span>
         <h2 className="section-title">Economize mais <em>comprando em kit.</em></h2>
-        <p className="section-sub">Quem compra em kit usa por mais tempo e sente resultados mais consistentes — com até 12% de desconto e frete grátis.</p>
+        <p className="section-sub">Quem compra em kit usa por mais tempo e sente resultados mais consistentes  com até 12% de desconto e frete grátis.</p>
       </div>
       <div className="kit-grid">
         {kits.map((k) => {
@@ -600,7 +600,7 @@ function Guarantee() {
   const seals = [
     { icon: <Icon.Lock size={20} />, h: "Pagamento Seguro", t: "Criptografia SSL e processadores confiáveis." },
     { icon: <Icon.Truck size={20} />, h: "Entrega Garantida", t: "Rastreio em tempo real para todo o Brasil." },
-    { icon: <Icon.Check size={20} />, h: "Produto Original", t: "Direto da Amazon BSB — selo de qualidade." },
+    { icon: <Icon.Check size={20} />, h: "Produto Original", t: "Direto da Amazon BSB  selo de qualidade." },
     { icon: <Icon.WhatsApp size={20} />, h: "Suporte por WhatsApp", t: "Atendimento humano, de segunda a sábado." },
   ];
   return (
@@ -911,14 +911,14 @@ function BenefitsShowcase() {
       <div className="section-head">
         <span className="section-kicker">O que ele faz pelo seu corpo</span>
         <h2 className="section-title">Benefícios visíveis, <em>de dentro para fora.</em></h2>
-        <p className="section-sub">Cada cápsula concentra os benefícios do óleo de avestruz — anti-inflamatório, antioxidante e regenerador natural.</p>
+        <p className="section-sub">Cada cápsula concentra os benefícios do óleo de avestruz  anti-inflamatório, antioxidante e regenerador natural.</p>
       </div>
       <div className="showcase-grid">
         <div className="showcase-cell intro">
           <div>
             <div className="kicker">Composição ativa</div>
             <h2>4 ômegas + vitaminas A e E em <em>uma única fonte.</em></h2>
-            <p>Rico em ácidos graxos essenciais e vitaminas lipossolúveis, o óleo de avestruz tem composição semelhante à da pele humana — o que explica sua eficiência em hidratar, cicatrizar e regenerar.</p>
+            <p>Rico em ácidos graxos essenciais e vitaminas lipossolúveis, o óleo de avestruz tem composição semelhante à da pele humana  o que explica sua eficiência em hidratar, cicatrizar e regenerar.</p>
           </div>
           <div className="pills">
             <span>Anti-inflamatório</span>
@@ -934,11 +934,11 @@ function BenefitsShowcase() {
         </div>
         <div className="showcase-cell wide">
           <span className="corner-tag"><Icon.Shield size={12} /> Sistema Imunológico</span>
-          <img src="assets/benefit-imune.png" alt="Óleo de Avestruz Amazon BSB com benefício para o sistema imunológico — alquilgliceróis e vitamina D₃" />
+          <img src="assets/benefit-imune.png" alt="Óleo de Avestruz Amazon BSB com benefício para o sistema imunológico  alquilgliceróis e vitamina D₃" />
         </div>
         <div className="showcase-cell wide">
           <span className="corner-tag"><Icon.Drop size={12} /> Pele e Cabelos</span>
-          <img src="assets/benefit-pele.png" alt="Óleo de Avestruz Amazon BSB — saúde da pele e cabelos com hidratação profunda" />
+          <img src="assets/benefit-pele.png" alt="Óleo de Avestruz Amazon BSB  saúde da pele e cabelos com hidratação profunda" />
         </div>
       </div>
     </section>
@@ -994,7 +994,7 @@ function Footer() {
           </div>
         </div>
         <div className="footer-bottom">
-          <div className="copy">© 2025 Amazon BSB — Todos os direitos reservados</div>
+          <div className="copy">© 2025 Amazon BSB  Todos os direitos reservados</div>
           <div style={{ display: 'flex', gap: 16, fontSize: 12, color: 'rgba(245,240,216,0.5)' }}>
             <span>CNPJ 00.000.000/0001-00</span>
             <span>Brasília, DF</span>

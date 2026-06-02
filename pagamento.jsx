@@ -1,4 +1,4 @@
-/* pagamento.jsx — Seleção de pagamento */
+/* pagamento.jsx  Seleção de pagamento */
 const { useState } = React;
 const BRL = (n) => "R$ " + Number(n).toFixed(2).replace(".", ",");
 
@@ -124,7 +124,7 @@ function PagamentoPage() {
               <div className={"pay-opt" + (method==="pix" ? " selected" : "")} onClick={() => setMethod("pix")}>
                 <div className="pay-opt-radio" />
                 <div>
-                  <div className="pay-opt-label">💚 Pix — Aprovação imediata</div>
+                  <div className="pay-opt-label">💚 Pix  Aprovação imediata</div>
                   <div className="pay-opt-sub">Escaneie o QR Code ou copie a chave. Prazo: imediato.</div>
                   {method === "pix" && (
                     <div className="pix-box">
@@ -140,7 +140,7 @@ function PagamentoPage() {
               <div className={"pay-opt" + (method==="cartao" ? " selected" : "")} onClick={() => setMethod("cartao")}>
                 <div className="pay-opt-radio" />
                 <div style={{ width:"100%" }}>
-                  <div className="pay-opt-label">💳 Cartão de crédito — 3x sem juros</div>
+                  <div className="pay-opt-label">💳 Cartão de crédito  3x sem juros</div>
                   <div className="pay-opt-sub">Visa, Mastercard, Elo, Amex</div>
                   {method === "cartao" && (
                     <div className="card-form">
@@ -178,7 +178,7 @@ function PagamentoPage() {
             </div>
 
             <button className="confirm-btn" style={{ marginTop:24 }} onClick={handleConfirm}>
-              {method === "pix" ? "Confirmar — já fiz o Pix" : method === "cartao" ? "Confirmar pagamento" : "Confirmar — gerar boleto"} →
+              {method === "pix" ? "Confirmar  já fiz o Pix" : method === "cartao" ? "Confirmar pagamento" : "Confirmar  gerar boleto"} →
             </button>
             <div className="guarantee-row" style={{ marginTop:16 }}>
               <span>🔒 Ambiente seguro</span><span>·</span><span>SSL criptografado</span>

@@ -1,4 +1,4 @@
-/* Admin Panel — Amazon BSB */
+/* Admin Panel  Amazon BSB */
 const { useState, useEffect, useMemo, useCallback } = React;
 
 const BRL = (n) => "R$ " + Number(n).toFixed(2).replace(".", ",");
@@ -165,7 +165,7 @@ function Dashboard({ orders, leads, stock }) {
                         </a>
                       ) : "Anônimo"}
                     </span>
-                    <span style={{ color:"#6b6f56", marginLeft:8 }}>· {items || "—"}</span>
+                    <span style={{ color:"#6b6f56", marginLeft:8 }}>· {items || ""}</span>
                   </div>
                   <div style={{ fontWeight:700, color:"#c53030", whiteSpace:"nowrap" }}>{BRL(s.total || 0)}</div>
                   <div style={{ color:"#6b6f56", fontSize:11, whiteSpace:"nowrap" }}>{timeAgo}</div>
@@ -185,7 +185,7 @@ function Dashboard({ orders, leads, stock }) {
 
       {/* Revenue chart */}
         <div style={{ background:"white", border:"1px solid #e3decb", borderRadius:16, padding:"24px 22px" }}>
-          <div style={{ fontSize:13, fontWeight:700, color:"#2a3618", marginBottom:20 }}>Receita — últimos 7 dias</div>
+          <div style={{ fontSize:13, fontWeight:700, color:"#2a3618", marginBottom:20 }}>Receita  últimos 7 dias</div>
           <div style={{ display:"flex", alignItems:"flex-end", gap:8, height:120 }}>
             {revenueByDay.map((d, i) => (
               <div key={i} style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", gap:4 }}>
@@ -273,13 +273,13 @@ function Orders({ orders, setOrders }) {
               <tr key={o.id} style={{ borderBottom:"1px solid #e3decb" }}>
                 <td style={{ padding:"12px 16px", fontWeight:700, color:"#2a3618" }}>{o.id}</td>
                 <td style={{ padding:"12px 16px", color:"#6b6f56", whiteSpace:"nowrap" }}>{fmtDate(o.date)}</td>
-                <td style={{ padding:"12px 16px", fontWeight:600, color:"#3b4128" }}>{o.customer.name || "—"}</td>
+                <td style={{ padding:"12px 16px", fontWeight:600, color:"#3b4128" }}>{o.customer.name || ""}</td>
                 <td style={{ padding:"12px 16px" }}>
                   {o.customer.phone ? (
                     <a href={`https://wa.me/55${o.customer.phone}`} target="_blank" rel="noreferrer" style={{ color:"#25d366", fontWeight:600 }}>
                       {fmtPhone(o.customer.phone)}
                     </a>
-                  ) : "—"}
+                  ) : ""}
                 </td>
                 <td style={{ padding:"12px 16px", color:"#3b4128" }}>{o.items.map(it => `${it.name} ×${it.qty}`).join(", ")}</td>
                 <td style={{ padding:"12px 16px", fontWeight:700, color:"#2a3618", whiteSpace:"nowrap" }}>{BRL(o.total)}</td>
@@ -383,26 +383,26 @@ function Customers({ leads, orders, customers }) {
                       {fmtPhone(c.phone)}
                     </a>
                   </td>
-                  <td style={{ padding:"12px 16px", color:"#3b4128", fontWeight:600 }}>{c.name || "—"}</td>
+                  <td style={{ padding:"12px 16px", color:"#3b4128", fontWeight:600 }}>{c.name || ""}</td>
                   <td style={{ padding:"12px 16px", color:"#6b6f56", fontSize:12 }}>
                     {c.address ? (
                       <span title={c.address}>
                         {c.cep ? <b style={{ color:"#3b4128" }}>{c.cep} · </b> : null}
                         {c.address.length > 28 ? c.address.slice(0,28) + "…" : c.address}
                       </span>
-                    ) : "—"}
+                    ) : ""}
                   </td>
                   <td style={{ padding:"12px 16px" }}>
-                    {c.coupon ? <span style={{ fontFamily:"'DM Mono',monospace", fontSize:11, background:"#e8edd4", padding:"3px 8px", borderRadius:6, color:"#3d4a2a" }}>{c.coupon}</span> : "—"}
+                    {c.coupon ? <span style={{ fontFamily:"'DM Mono',monospace", fontSize:11, background:"#e8edd4", padding:"3px 8px", borderRadius:6, color:"#3d4a2a" }}>{c.coupon}</span> : ""}
                   </td>
                   <td style={{ padding:"12px 16px", textAlign:"center", fontWeight:700, color:"#2a3618" }}>{totalOrders}</td>
-                  <td style={{ padding:"12px 16px", fontWeight:700, color:"#2a3618" }}>{spent > 0 ? BRL(spent) : "—"}</td>
+                  <td style={{ padding:"12px 16px", fontWeight:700, color:"#2a3618" }}>{spent > 0 ? BRL(spent) : ""}</td>
                   <td style={{ padding:"12px 16px" }}>
                     <span style={{ padding:"3px 10px", borderRadius:999, fontSize:11, fontWeight:700, background: sourceColor.bg, color: sourceColor.color }}>
                       {sourceLabel}
                     </span>
                   </td>
-                  <td style={{ padding:"12px 16px", color:"#6b6f56", whiteSpace:"nowrap" }}>{c.firstSeen ? new Date(c.firstSeen).toLocaleDateString("pt-BR") : "—"}</td>
+                  <td style={{ padding:"12px 16px", color:"#6b6f56", whiteSpace:"nowrap" }}>{c.firstSeen ? new Date(c.firstSeen).toLocaleDateString("pt-BR") : ""}</td>
                 </tr>
               );
             })}
