@@ -47,10 +47,7 @@ function PagamentoPage() {
 
   const handleConfirm = () => {
     const orderId = "PED-" + Date.now();
-
-    // Save final order
-    const orders = JSON.parse(localStorage.getItem("amazo_orders") || "[]");
-    orders.unshift({
+    const pedido = {
       id: orderId,
       date: new Date().toISOString(),
       items: cart,
@@ -58,21 +55,29 @@ function PagamentoPage() {
       status: "pendente",
       customer,
       payment: method,
-    });
+    };
+
+    // Save to localStorage
+    const orders = JSON.parse(localStorage.getItem("amazo_orders") || "[]");
+    orders.unshift(pedido);
     localStorage.setItem("amazo_orders", JSON.stringify(orders));
 
     // Update customer orderCount
-    const db = JSON.parse(localStorage.getItem("amazo_customers") || "{}");
-    const prev = db[customer.phone] || {};
-    db[customer.phone] = { ...prev, ...customer, orderCount: (prev.orderCount || 0) + 1, lastSeen: new Date().toISOString() };
-    localStorage.setItem("amazo_customers", JSON.stringify(db));
+    const localDb = JSON.parse(localStorage.getItem("amazo_customers") || "{}");
+    const prev = localDb[customer.phone] || {};
+    localDb[customer.phone] = { ...prev, ...customer, orderCount: (prev.orderCount || 0) + 1, lastSeen: new Date().toISOString() };
+    localStorage.setItem("amazo_customers", JSON.stringify(localDb));
 
     // Mark session as completed
     if (sessionId) {
       const sessions = JSON.parse(localStorage.getItem("amazo_checkout_sessions") || "[]");
       const s = sessions.find(s => s.id === sessionId);
       if (s) { s.status = "completed"; s.orderId = orderId; localStorage.setItem("amazo_checkout_sessions", JSON.stringify(sessions)); }
+      if (window.dbAtualizarStatusSessao) window.dbAtualizarStatusSessao(sessionId, "completed");
     }
+
+    // Save to Supabase (fire and forget)
+    if (window.dbSalvarPedido) window.dbSalvarPedido(pedido);
 
     // Clear cart + pending
     localStorage.removeItem("amazo_cart");

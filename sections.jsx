@@ -1364,15 +1364,11 @@ function WhatsAppPopup({ onClose }) {
     if (digits.length < 10) { setError("Informe um número válido com DDD."); return; }
 
     const leads = JSON.parse(localStorage.getItem("amazo_leads") || "[]");
-    leads.unshift({
-      id: Date.now(),
-      phone: digits,
-      coupon: COUPON.code,
-      date: new Date().toISOString(),
-      source: "popup",
-    });
+    leads.unshift({ id: Date.now(), phone: digits, coupon: COUPON.code, date: new Date().toISOString(), source: "popup" });
     localStorage.setItem("amazo_leads", JSON.stringify(leads));
     localStorage.setItem("amazo_popup_shown", "1");
+    // Save to Supabase
+    if (window.dbSalvarLead) window.dbSalvarLead(digits, COUPON.code);
     setSent(true);
 
     const msg = encodeURIComponent(`Olá Amazon BSB! Quero usar meu cupom de desconto: ${COUPON.code}`);

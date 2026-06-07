@@ -8,15 +8,21 @@ const saveCart = (c) => localStorage.setItem("amazo_cart", JSON.stringify(c));
 function startAbandonSession(cart, total) {
   const sessions = JSON.parse(localStorage.getItem("amazo_checkout_sessions") || "[]");
   const id = "CS-" + Date.now();
-  sessions.unshift({ id, cart, total, startedAt: new Date().toISOString(), phone: "", status: "abandoned" });
+  const session = { id, cart, total, startedAt: new Date().toISOString(), phone: "", status: "abandoned" };
+  sessions.unshift(session);
   localStorage.setItem("amazo_checkout_sessions", JSON.stringify(sessions.slice(0, 200)));
+  if (window.dbSalvarSessao) window.dbSalvarSessao(session);
   return id;
 }
 
 function updateSessionPhone(sessionId, phone) {
   const sessions = JSON.parse(localStorage.getItem("amazo_checkout_sessions") || "[]");
   const s = sessions.find(s => s.id === sessionId);
-  if (s) { s.phone = phone; localStorage.setItem("amazo_checkout_sessions", JSON.stringify(sessions)); }
+  if (s) {
+    s.phone = phone;
+    localStorage.setItem("amazo_checkout_sessions", JSON.stringify(sessions));
+    if (window.dbSalvarSessao) window.dbSalvarSessao({ id: sessionId, phone, cart: s.cart, total: s.total, status: 'abandoned' });
+  }
 }
 
 function Progress() {
@@ -116,17 +122,30 @@ function CheckoutPage() {
     return d.length <= 5 ? d : `${d.slice(0,5)}-${d.slice(5)}`;
   };
 
-  const lookupCustomer = (digits) => {
-    const db = JSON.parse(localStorage.getItem("amazo_customers") || "{}");
-    const c = db[digits];
-    if (c) {
-      if (c.name)    setName(c.name);
-      if (c.cep)     setCep(c.cep);
-      if (c.address) setAddress(c.address);
+  const lookupCustomer = async (digits) => {
+    let found = false;
+    // localStorage primeiro (instantâneo)
+    const localDb = JSON.parse(localStorage.getItem("amazo_customers") || "{}");
+    const localC = localDb[digits];
+    if (localC) {
+      if (localC.name)    setName(localC.name);
+      if (localC.cep)     setCep(localC.cep);
+      if (localC.address) setAddress(localC.address);
+      found = true;
       setAutoFilled(true);
-    } else {
-      setAutoFilled(false);
     }
+    // Supabase depois (pode ter dados de outro dispositivo)
+    if (window.dbBuscarCliente) {
+      const remoteC = await window.dbBuscarCliente(digits);
+      if (remoteC) {
+        if (remoteC.nome)     setName(remoteC.nome);
+        if (remoteC.cep)      setCep(fmtCep(remoteC.cep));
+        if (remoteC.endereco) setAddress(remoteC.endereco);
+        found = true;
+        setAutoFilled(true);
+      }
+    }
+    if (!found) setAutoFilled(false);
   };
 
   const handlePhone = (v) => {
@@ -161,10 +180,14 @@ function CheckoutPage() {
     const digits = phone.replace(/\D/g,"");
 
     // Update customer profile
-    const db = JSON.parse(localStorage.getItem("amazo_customers") || "{}");
-    const prev = db[digits] || {};
-    db[digits] = { ...prev, phone: digits, name: name.trim(), cep, address: address.trim(), lastSeen: new Date().toISOString() };
-    localStorage.setItem("amazo_customers", JSON.stringify(db));
+    const localDb = JSON.parse(localStorage.getItem("amazo_customers") || "{}");
+    const prev = localDb[digits] || {};
+    localDb[digits] = { ...prev, phone: digits, name: name.trim(), cep, address: address.trim(), lastSeen: new Date().toISOString() };
+    localStorage.setItem("amazo_customers", JSON.stringify(localDb));
+
+    // Save to Supabase
+    if (window.dbSalvarCliente) window.dbSalvarCliente({ telefone: digits, nome: name.trim(), cep, endereco: address.trim() });
+    if (window.dbSalvarSessao) window.dbSalvarSessao({ id: sessionId, phone: digits, cart, total, status: 'abandoned' });
 
     // Save pending order data for payment page
     localStorage.setItem("amazo_pending_order", JSON.stringify({

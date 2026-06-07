@@ -46,9 +46,7 @@ const DEFAULT_STOCK = {
 };
 
 function seedIfEmpty() {
-  if (!localStorage.getItem("amazo_orders"))  localStorage.setItem("amazo_orders",  JSON.stringify(MOCK_ORDERS));
-  if (!localStorage.getItem("amazo_leads"))   localStorage.setItem("amazo_leads",   JSON.stringify(MOCK_LEADS));
-  if (!localStorage.getItem("amazo_stock"))   localStorage.setItem("amazo_stock",   JSON.stringify(DEFAULT_STOCK));
+  if (!localStorage.getItem("amazo_stock")) localStorage.setItem("amazo_stock", JSON.stringify(DEFAULT_STOCK));
 }
 
 // ---- Helpers ----
@@ -98,12 +96,13 @@ function Metric({ label, value, sub, color }) {
 }
 
 // ---- Dashboard tab ----
-function Dashboard({ orders, leads, stock }) {
+function Dashboard({ orders, leads, stock, sessions }) {
   const revenue = orders.filter(o => o.status !== "cancelado").reduce((s, o) => s + o.total, 0);
   const lowStock = Object.values(stock).filter(s => s.qty <= s.min).length;
 
-  const sessions = JSON.parse(localStorage.getItem("amazo_checkout_sessions") || "[]");
-  const abandoned = sessions.filter(s => {
+  const localSessions = JSON.parse(localStorage.getItem("amazo_checkout_sessions") || "[]");
+  const allSessions = (sessions && sessions.length > 0) ? sessions : localSessions;
+  const abandoned = allSessions.filter(s => {
     if (s.status !== "abandoned") return false;
     return (Date.now() - new Date(s.startedAt).getTime()) > 30 * 60 * 1000;
   }).slice(0, 20);
@@ -239,6 +238,7 @@ function Orders({ orders, setOrders }) {
     const updated = orders.map(o => o.id === id ? { ...o, status } : o);
     setOrders(updated);
     localStorage.setItem("amazo_orders", JSON.stringify(updated));
+    if (window.dbAtualizarStatusPedido) window.dbAtualizarStatusPedido(id, status);
   };
 
   return (
@@ -475,19 +475,57 @@ function Stock({ stock, setStock }) {
 function AdminApp() {
   const [authed, setAuthed] = useState(() => !!localStorage.getItem("amazo_admin_token"));
   const [tab, setTab] = useState("dashboard");
-  const [orders, setOrders] = useState([]);
-  const [leads, setLeads]   = useState([]);
-  const [stock, setStock]   = useState({});
-
+  const [orders, setOrders]     = useState([]);
+  const [leads, setLeads]       = useState([]);
+  const [stock, setStock]       = useState({});
   const [customers, setCustomers] = useState({});
+  const [sessions, setSessions] = useState([]);
 
   useEffect(() => {
     if (!authed) return;
     seedIfEmpty();
-    setOrders(JSON.parse(localStorage.getItem("amazo_orders")    || "[]"));
-    setLeads(JSON.parse(localStorage.getItem("amazo_leads")      || "[]"));
-    setStock(JSON.parse(localStorage.getItem("amazo_stock")      || "{}"));
-    setCustomers(JSON.parse(localStorage.getItem("amazo_customers") || "{}"));
+    setStock(JSON.parse(localStorage.getItem("amazo_stock") || JSON.stringify(DEFAULT_STOCK)));
+
+    if (!window.db) {
+      setOrders(JSON.parse(localStorage.getItem("amazo_orders") || "[]"));
+      setLeads(JSON.parse(localStorage.getItem("amazo_leads") || "[]"));
+      setCustomers(JSON.parse(localStorage.getItem("amazo_customers") || "{}"));
+      return;
+    }
+
+    Promise.all([
+      window.db.from('pedidos').select('*').order('data', { ascending: false }).limit(500),
+      window.db.from('leads').select('*').order('criado_em', { ascending: false }).limit(1000),
+      window.db.from('clientes').select('*').limit(1000),
+      window.db.from('sessoes_checkout').select('*').order('iniciado_em', { ascending: false }).limit(200),
+    ]).then(([{ data: pedidos }, { data: leadsData }, { data: clientesData }, { data: sessoesData }]) => {
+      if (pedidos) setOrders(pedidos.map(p => ({
+        id: p.id, date: p.data, items: p.itens, total: Number(p.total),
+        status: p.status, payment: p.pagamento,
+        customer: { name: p.cliente_nome, phone: p.cliente_telefone, cep: p.cliente_cep, address: p.cliente_endereco },
+      })));
+
+      if (leadsData) setLeads(leadsData.map(l => ({
+        id: l.id, phone: l.telefone, coupon: l.cupom, date: l.criado_em, source: l.fonte,
+      })));
+
+      if (clientesData) {
+        const cm = {};
+        clientesData.forEach(c => {
+          cm[c.telefone] = { phone: c.telefone, name: c.nome, cep: c.cep, address: c.endereco, orderCount: c.num_pedidos };
+        });
+        setCustomers(cm);
+      }
+
+      if (sessoesData) setSessions(sessoesData.map(s => ({
+        id: s.id, phone: s.telefone, cart: s.cart, total: Number(s.total), status: s.status, startedAt: s.iniciado_em,
+      })));
+    }).catch(e => {
+      console.warn('Supabase load error:', e);
+      setOrders(JSON.parse(localStorage.getItem("amazo_orders") || "[]"));
+      setLeads(JSON.parse(localStorage.getItem("amazo_leads") || "[]"));
+      setCustomers(JSON.parse(localStorage.getItem("amazo_customers") || "{}"));
+    });
   }, [authed]);
 
   if (!authed) return <Login onLogin={() => setAuthed(true)} />;
@@ -522,7 +560,7 @@ function AdminApp() {
           ))}
         </nav>
 
-        {tab === "dashboard" && <Dashboard orders={orders} leads={leads} stock={stock} />}
+        {tab === "dashboard" && <Dashboard orders={orders} leads={leads} stock={stock} sessions={sessions} />}
         {tab === "orders"    && <Orders    orders={orders} setOrders={setOrders} />}
         {tab === "customers" && <Customers leads={leads} orders={orders} customers={customers} />}
         {tab === "stock"     && <Stock     stock={stock} setStock={setStock} />}
