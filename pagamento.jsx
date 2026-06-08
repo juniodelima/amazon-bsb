@@ -1,4 +1,4 @@
-/* pagamento.jsx  Seleção de pagamento */
+/* pagamento.jsx  Seleção de pagamento + integração PagBank */
 const { useState } = React;
 const BRL = (n) => "R$ " + Number(n).toFixed(2).replace(".", ",");
 
@@ -23,10 +23,8 @@ function PagamentoPage() {
   })();
 
   const [method, setMethod] = useState("pix");
-  const [cardNumber, setCardNumber] = useState("");
-  const [cardName, setCardName] = useState("");
-  const [cardExpiry, setCardExpiry] = useState("");
-  const [cardCvv, setCardCvv] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [erro, setErro] = useState("");
 
   if (!pending) {
     return (
@@ -42,10 +40,10 @@ function PagamentoPage() {
 
   const { cart, total, customer, sessionId } = pending;
 
-  const fmtCard = (v) => v.replace(/\D/g,"").slice(0,16).replace(/(.{4})/g,"$1 ").trim();
-  const fmtExpiry = (v) => { const d = v.replace(/\D/g,"").slice(0,4); return d.length > 2 ? d.slice(0,2) + "/" + d.slice(2) : d; };
+  const handleConfirm = async () => {
+    setErro("");
+    setLoading(true);
 
-  const handleConfirm = () => {
     const orderId = "PED-" + Date.now();
     const pedido = {
       id: orderId,
@@ -57,18 +55,16 @@ function PagamentoPage() {
       payment: method,
     };
 
-    // Save to localStorage
+    // Salva localmente antes de ir para PagBank
     const orders = JSON.parse(localStorage.getItem("amazo_orders") || "[]");
     orders.unshift(pedido);
     localStorage.setItem("amazo_orders", JSON.stringify(orders));
 
-    // Update customer orderCount
     const localDb = JSON.parse(localStorage.getItem("amazo_customers") || "{}");
     const prev = localDb[customer.phone] || {};
     localDb[customer.phone] = { ...prev, ...customer, orderCount: (prev.orderCount || 0) + 1, lastSeen: new Date().toISOString() };
     localStorage.setItem("amazo_customers", JSON.stringify(localDb));
 
-    // Mark session as completed
     if (sessionId) {
       const sessions = JSON.parse(localStorage.getItem("amazo_checkout_sessions") || "[]");
       const s = sessions.find(s => s.id === sessionId);
@@ -76,17 +72,39 @@ function PagamentoPage() {
       if (window.dbAtualizarStatusSessao) window.dbAtualizarStatusSessao(sessionId, "completed");
     }
 
-    // Save to Supabase (fire and forget)
+    // Salva no Supabase
     if (window.dbSalvarPedido) window.dbSalvarPedido(pedido);
 
-    // Clear cart + pending
+    // Salva referência para obrigado.html
+    localStorage.setItem("amazo_last_order", JSON.stringify({ orderId, customer, total, cart, payment: method }));
     localStorage.removeItem("amazo_cart");
     localStorage.removeItem("amazo_pending_order");
 
-    // Save order id for obrigado page
-    localStorage.setItem("amazo_last_order", JSON.stringify({ orderId, customer, total, cart, payment: method }));
+    // Chama API para criar checkout no PagBank
+    try {
+      const resp = await fetch("/api/criar-pedido", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cart, total, customer, orderId, paymentMethod: method }),
+      });
 
-    window.location.href = "obrigado.html";
+      const data = await resp.json();
+
+      if (!resp.ok || !data.checkoutUrl) {
+        console.error("Erro PagBank:", data);
+        setErro("Não foi possível conectar com o PagBank. Tente novamente.");
+        setLoading(false);
+        return;
+      }
+
+      // Redireciona para o checkout PagBank
+      window.location.href = data.checkoutUrl;
+
+    } catch (err) {
+      console.error("Erro de rede:", err);
+      setErro("Erro de conexão. Verifique sua internet e tente novamente.");
+      setLoading(false);
+    }
   };
 
   return (
@@ -95,7 +113,7 @@ function PagamentoPage() {
       <Progress />
 
       <div className="pg-wrap">
-        {/* Order summary */}
+        {/* Resumo */}
         <div className="pg-card">
           <div className="pg-card-head">Resumo do pedido</div>
           <div className="pg-card-body">
@@ -120,71 +138,55 @@ function PagamentoPage() {
           </div>
         </div>
 
-        {/* Payment */}
+        {/* Forma de pagamento */}
         <div className="pg-card">
-          <div className="pg-card-head">Forma de pagamento</div>
+          <div className="pg-card-head">Prefere pagar com…</div>
           <div className="pg-card-body">
             <div className="pay-options">
-              {/* PIX */}
               <div className={"pay-opt" + (method==="pix" ? " selected" : "")} onClick={() => setMethod("pix")}>
                 <div className="pay-opt-radio" />
                 <div>
                   <div className="pay-opt-label">💚 Pix  Aprovação imediata</div>
-                  <div className="pay-opt-sub">Escaneie o QR Code ou copie a chave. Prazo: imediato.</div>
-                  {method === "pix" && (
-                    <div className="pix-box">
-                      <div style={{ fontSize:13, color:"#6b6f56", marginBottom:6 }}>Chave Pix:</div>
-                      <div className="pix-key">amazo.bsb@pagamento.com.br</div>
-                      <div className="pix-note">Após o pagamento, nossa equipe confirmará e enviará o pedido em até 1 dia útil.</div>
-                    </div>
-                  )}
+                  <div className="pay-opt-sub">Pague via Pix e tenha confirmação na hora.</div>
                 </div>
               </div>
 
-              {/* Cartão */}
               <div className={"pay-opt" + (method==="cartao" ? " selected" : "")} onClick={() => setMethod("cartao")}>
                 <div className="pay-opt-radio" />
-                <div style={{ width:"100%" }}>
+                <div>
                   <div className="pay-opt-label">💳 Cartão de crédito  3x sem juros</div>
-                  <div className="pay-opt-sub">Visa, Mastercard, Elo, Amex</div>
-                  {method === "cartao" && (
-                    <div className="card-form">
-                      <div className="f-field">
-                        <label>Número do cartão</label>
-                        <input type="text" placeholder="0000 0000 0000 0000" value={cardNumber} onChange={e => setCardNumber(fmtCard(e.target.value))} />
-                      </div>
-                      <div className="f-field">
-                        <label>Nome no cartão</label>
-                        <input type="text" placeholder="NOME SOBRENOME" value={cardName} onChange={e => setCardName(e.target.value.toUpperCase())} />
-                      </div>
-                      <div className="f-row2">
-                        <div className="f-field">
-                          <label>Validade</label>
-                          <input type="text" placeholder="MM/AA" value={cardExpiry} onChange={e => setCardExpiry(fmtExpiry(e.target.value))} />
-                        </div>
-                        <div className="f-field">
-                          <label>CVV</label>
-                          <input type="text" placeholder="123" maxLength={4} value={cardCvv} onChange={e => setCardCvv(e.target.value.replace(/\D/g,"").slice(0,4))} />
-                        </div>
-                      </div>
-                    </div>
-                  )}
+                  <div className="pay-opt-sub">Visa, Mastercard, Elo, Amex e outros.</div>
                 </div>
               </div>
 
-              {/* Boleto */}
               <div className={"pay-opt" + (method==="boleto" ? " selected" : "")} onClick={() => setMethod("boleto")}>
                 <div className="pay-opt-radio" />
                 <div>
                   <div className="pay-opt-label">📄 Boleto bancário</div>
-                  <div className="pay-opt-sub">Prazo: 1–3 dias úteis após pagamento. Gerado após a confirmação.</div>
+                  <div className="pay-opt-sub">Prazo: 1–3 dias úteis após pagamento.</div>
                 </div>
               </div>
             </div>
 
-            <button className="confirm-btn" style={{ marginTop:24 }} onClick={handleConfirm}>
-              {method === "pix" ? "Confirmar  já fiz o Pix" : method === "cartao" ? "Confirmar pagamento" : "Confirmar  gerar boleto"} →
+            {erro && (
+              <div style={{ marginTop:16, padding:"12px 16px", background:"#fff5f5", border:"1px solid #fed7d7", borderRadius:10, fontSize:13, color:"#c53030" }}>
+                ⚠️ {erro}
+              </div>
+            )}
+
+            <button
+              className="confirm-btn"
+              style={{ marginTop:24, opacity: loading ? 0.7 : 1 }}
+              onClick={handleConfirm}
+              disabled={loading}
+            >
+              {loading ? "⏳ Conectando ao PagBank…" : "Continuar para pagamento →"}
             </button>
+
+            <div style={{ marginTop:14, padding:"12px 16px", background:"#f5f0d8", borderRadius:10, fontSize:12, color:"#6b6f56", textAlign:"center", lineHeight:1.5 }}>
+              🔒 Você será redirecionado para o ambiente seguro do <b>PagBank</b> para concluir o pagamento.
+            </div>
+
             <div className="guarantee-row" style={{ marginTop:16 }}>
               <span>🔒 Ambiente seguro</span><span>·</span><span>SSL criptografado</span>
             </div>
