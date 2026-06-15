@@ -5,62 +5,87 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Método não permitido' });
 
-  const token  = process.env.PAGBANK_TOKEN;
-  const email  = process.env.PAGBANK_EMAIL;
+  const token   = process.env.PAGBANK_TOKEN;
   const sandbox = process.env.PAGBANK_SANDBOX === 'true';
 
-  if (!token || !email) return res.status(500).json({ error: 'Credenciais PagSeguro não configuradas' });
+  if (!token) return res.status(500).json({ error: 'Token PagBank não configurado' });
 
   const { cart, total, customer, orderId } = req.body;
   if (!cart || !orderId) return res.status(400).json({ error: 'Dados incompletos' });
 
-  const wsBase  = sandbox ? 'https://ws.sandbox.pagseguro.uol.com.br' : 'https://ws.pagseguro.uol.com.br';
-  const payBase = sandbox ? 'https://sandbox.pagseguro.uol.com.br' : 'https://pagseguro.uol.com.br';
+  const apiBase = sandbox
+    ? 'https://sandbox.api.pagseguro.com'
+    : 'https://api.pagseguro.com';
+
   const siteUrl = process.env.SITE_URL || `https://${req.headers.host}`;
 
-  // Monta payload form-encoded (formato antigo PagSeguro)
-  const params = new URLSearchParams();
-  params.append('currency', 'BRL');
-  params.append('reference', orderId);
-  params.append('redirectURL', `${siteUrl}/obrigado.html`);
-  params.append('notificationURL', `${siteUrl}/api/webhook-pagbank`);
+  // Monta itens (valores em centavos)
+  const items = cart.map((item) => ({
+    reference_id: String(item.id).slice(0, 36),
+    name: String(item.name).slice(0, 100),
+    quantity: Number(item.qty),
+    unit_amount: Math.round(Number(item.price) * 100),
+  }));
 
-  cart.forEach((item, i) => {
-    const n = i + 1;
-    params.append(`itemId${n}`, String(item.id).slice(0, 36));
-    params.append(`itemDescription${n}`, String(item.name).slice(0, 100));
-    params.append(`itemAmount${n}`, Number(item.price).toFixed(2));
-    params.append(`itemQuantity${n}`, String(item.qty));
-  });
+  const body = {
+    reference_id: orderId,
+    items,
+    payment_methods: [
+      { type: 'CREDIT_CARD' },
+      { type: 'DEBIT_CARD' },
+      { type: 'PIX' },
+      { type: 'BOLETO' },
+    ],
+    redirect_url: `${siteUrl}/obrigado.html`,
+    payment_notification_urls: [`${siteUrl}/api/webhook-pagbank`],
+    soft_descriptor: 'Amazon BSB',
+  };
+
+  // Adiciona dados do cliente se disponíveis
+  if (customer?.name) {
+    const phone = (customer.phone || '').replace(/\D/g, '');
+    body.customer = {
+      name: customer.name,
+      email: customer.email || `cliente_${Date.now()}@noemail.com`,
+      tax_id: customer.cpf ? customer.cpf.replace(/\D/g, '') : '00000000191',
+    };
+    if (phone.length >= 10) {
+      body.customer.phones = [{
+        country: '55',
+        area: phone.slice(0, 2),
+        number: phone.slice(2, 11),
+        type: 'MOBILE',
+      }];
+    }
+  }
 
   try {
-    const response = await fetch(
-      `${wsBase}/v2/checkout?email=${encodeURIComponent(email)}&token=${token}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
-        body: params.toString(),
-      }
-    );
+    const response = await fetch(`${apiBase}/checkouts`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(body),
+    });
 
-    const text = await response.text();
-    console.log('PagSeguro response:', text);
+    const data = await response.json();
+    console.log('PagBank response status:', response.status);
+    console.log('PagBank response:', JSON.stringify(data));
 
     if (!response.ok) {
-      return res.status(502).json({ error: 'Erro PagSeguro', details: text });
+      return res.status(502).json({ error: 'Erro PagBank', details: JSON.stringify(data) });
     }
 
-    const codeMatch = text.match(/<code>(.+?)<\/code>/);
-    if (!codeMatch) {
-      return res.status(502).json({ error: 'Código de checkout não encontrado', details: text });
+    // Link com rel "PAY" é a URL do checkout
+    const payLink = data.links?.find(l => l.rel === 'PAY');
+    if (!payLink?.href) {
+      return res.status(502).json({ error: 'URL de pagamento não encontrada', details: JSON.stringify(data) });
     }
 
-    const code = codeMatch[1];
-    const checkoutUrl = `${payBase}/v2/checkout/payment.html?code=${code}`;
-
-    return res.status(200).json({ checkoutUrl, code });
+    return res.status(200).json({ checkoutUrl: payLink.href, code: data.id });
   } catch (err) {
-    console.error('Erro:', err);
+    console.error('Erro criar-pedido:', err);
     return res.status(500).json({ error: err.message });
   }
 }
