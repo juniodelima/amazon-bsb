@@ -85,7 +85,8 @@ function PagamentoPage() {
 
       if (!resp.ok || !data.checkoutUrl) {
         console.error("Erro PagBank:", data);
-        setErro("Não foi possível conectar com o PagBank. Tente novamente.");
+        const detalhe = data.details || data.error || JSON.stringify(data);
+        setErro("Erro PagBank: " + detalhe);
         setLoading(false);
         return;
       }
