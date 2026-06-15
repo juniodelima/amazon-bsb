@@ -18,9 +18,10 @@ function Progress() {
 }
 
 function PagamentoPage() {
-  const pending = (() => {
+  // useState garante que pending não some ao re-renderizar
+  const [pending] = useState(() => {
     try { return JSON.parse(localStorage.getItem("amazo_pending_order") || "null"); } catch { return null; }
-  })();
+  });
 
   const [method, setMethod] = useState("pix");
   const [loading, setLoading] = useState(false);
@@ -72,15 +73,7 @@ function PagamentoPage() {
       if (window.dbAtualizarStatusSessao) window.dbAtualizarStatusSessao(sessionId, "completed");
     }
 
-    // Salva no Supabase
-    if (window.dbSalvarPedido) window.dbSalvarPedido(pedido);
-
-    // Salva referência para obrigado.html
-    localStorage.setItem("amazo_last_order", JSON.stringify({ orderId, customer, total, cart, payment: method }));
-    localStorage.removeItem("amazo_cart");
-    localStorage.removeItem("amazo_pending_order");
-
-    // Chama API para criar checkout no PagBank
+    // Chama API para criar checkout no PagBank PRIMEIRO
     try {
       const resp = await fetch("/api/criar-pedido", {
         method: "POST",
@@ -96,6 +89,12 @@ function PagamentoPage() {
         setLoading(false);
         return;
       }
+
+      // Só salva e limpa depois de confirmar que a URL chegou
+      if (window.dbSalvarPedido) window.dbSalvarPedido(pedido);
+      localStorage.setItem("amazo_last_order", JSON.stringify({ orderId, customer, total, cart, payment: method }));
+      localStorage.removeItem("amazo_cart");
+      localStorage.removeItem("amazo_pending_order");
 
       // Redireciona para o checkout PagBank
       window.location.href = data.checkoutUrl;
