@@ -4,6 +4,25 @@ const BRL = (n) => "R$ " + n.toFixed(2).replace(".", ",");
 
 const PRODUCTS = [
   {
+    id: "teste-1real",
+    name: "Produto Teste R$1",
+    short: "Apenas para teste — será removido",
+    type: "Teste",
+    price: 1.00,
+    parcela: 1.00,
+    art: "drop",
+    tag: null,
+    rating: 5.0,
+    reviews: 1,
+    details: {
+      description: "Produto de teste para validar integração de pagamento.",
+      benefits: ["Teste de integração"],
+      howToUse: "Apenas para teste.",
+      composition: "Teste.",
+      volume: "Teste",
+    },
+  },
+  {
     id: "gotas-50ml",
     name: "Óleo de Avestruz  Gotas 50ml",
     short: "Uso direto, culinário e em saladas",
